@@ -10,6 +10,7 @@ import { getAllMedia } from '@/lib/sanity-queries';
 import { urlFor } from '@/sanity/lib/image';
 
 interface MediaItem {
+  file: any;
   _id: string;
   title: string;
   description?: string;

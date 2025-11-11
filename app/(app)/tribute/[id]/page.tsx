@@ -22,6 +22,8 @@ interface Tribute {
 }
 
 interface Memorial {
+  id: string;
+  imageUrl: string | Blob;
   _id: string;
   name: string;
   role: string;

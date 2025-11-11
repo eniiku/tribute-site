@@ -8,6 +8,7 @@ import { getRandomMediaForWall } from '@/lib/sanity-queries';
 import { urlFor } from '@/sanity/lib/image';
 
 interface WallImage {
+  imageUrl: string | Blob;
   _id: string;
   title: string;
   mediaType: string;
