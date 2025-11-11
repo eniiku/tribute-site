@@ -17,8 +17,13 @@ interface MemorialCardProps {
 }
 
 const MemorialCard = ({ memorial }: MemorialCardProps) => {
+  // Use the id from the memorial object, falling back to _id if needed for compatibility
+  const memorialId = memorial.id || (memorial as any)._id;
+
+  console.log(memorial)
+
   return (
-    <Link href={`/tribute/${memorial.id}`} className='block group'>
+    <Link href={`/tribute/${memorialId}`} className='block group'>
       <Card className='overflow-hidden shadow-gentle hover:shadow-soft transition-smooth border-border/50'>
         <div className='aspect-square overflow-hidden bg-muted'>
           <img
@@ -36,7 +41,7 @@ const MemorialCard = ({ memorial }: MemorialCardProps) => {
             {memorial.department}
           </p>
           <p className='text-sm text-muted-foreground font-medium mb-4'>
-            {memorial.years}
+            {memorial.years.match(/\d{4}/g)?.join(" - ") ?? "N/A"}
           </p>
 
           <div className='flex items-center gap-2 text-sm text-accent'>

@@ -1,48 +1,117 @@
+'use client'
+
+import { useState, useEffect } from "react";
 import { Calendar, MapPin, Heart } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { getTimelineEvents } from '@/lib/sanity-queries';
+import { getAllMemorials } from '@/lib/sanity-queries';
 
-// Mock timeline events
-const timelineEvents = [
-  {
-    id: "1",
-    date: "2024-03-15",
-    title: "Dr. Sarah Mitchell Memorial Service",
-    description: "A celebration of life held at the university chapel, attended by over 200 colleagues, students, and family members.",
-    linkedTribute: "1",
-    type: "memorial",
-    location: "University Chapel"
-  },
-  {
-    id: "2",
-    date: "2023-12-10",
-    title: "James O'Connor Retirement Ceremony",
-    description: "After 35 years of dedicated service, James was honored with a retirement ceremony that became a memorial event.",
-    linkedTribute: "2",
-    type: "event",
-    location: "Main Hall"
-  },
-  {
-    id: "3",
-    date: "2024-01-20",
-    title: "Prof. María Rodríguez Scholarship Fund Established",
-    description: "In honor of her legacy, the university established a mathematics scholarship fund.",
-    linkedTribute: "3",
-    type: "honor",
-    location: "Mathematics Department"
-  },
-  {
-    id: "4",
-    date: "2023-11-05",
-    title: "Annual Memorial Day",
-    description: "The university's annual day of remembrance for all departed faculty and staff.",
-    type: "memorial",
-    location: "Memorial Garden"
-  }
-];
+interface TimelineEvent {
+  _id: string;
+  title: string;
+  date: string;
+  description: string;
+  eventType: string;
+  image?: any;
+  memorialName?: string;
+}
+
+interface Memorial {
+  _id: string;
+  name: string;
+  deathDate?: string;
+}
 
 const Timeline = () => {
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
+  const [memorials, setMemorials] = useState<Memorial[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch both timeline events and memorials
+        const [timelineData, memorialsData] = await Promise.all([
+          getTimelineEvents(),
+          getAllMemorials()
+        ]);
+        
+        // Process timeline events
+        const processedEvents = timelineData.map((event: any) => ({
+          _id: event._id,
+          title: event.title,
+          date: event.date,
+          description: event.description,
+          eventType: event.eventType,
+          image: event.image,
+          memorialName: event.memorialName
+        }));
+
+          console.log("useState", memorialsData)
+
+        
+        // Process memorials
+        const processedMemorials = memorialsData.map((memorial: any) => ({
+          _id: memorial._id,
+          name: memorial.name,
+          deathDate: memorial.deathDate
+        }));
+        
+        setTimelineEvents(processedEvents);
+        setMemorials(processedMemorials);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Calculate upcoming memorial anniversaries from death dates
+  const getMemorialAnniversaries = () => {
+    const today = new Date();
+    const nextYear = today.getFullYear() + 1;
+    
+    return memorials
+      .filter(memorial => memorial.deathDate)
+      .map(memorial => {
+        const deathDate = new Date(memorial.deathDate);
+        // Calculate this year's anniversary
+        const anniversaryThisYear = new Date(today.getFullYear(), deathDate.getMonth(), deathDate.getDate());
+        // Calculate next year's anniversary if this year's already passed
+        const anniversaryNextYear = new Date(nextYear, deathDate.getMonth(), deathDate.getDate());
+        
+        // Use this year's anniversary if it's coming up, otherwise next year's
+        const nextAnniversary = anniversaryThisYear > today ? anniversaryThisYear : anniversaryNextYear;
+        
+        return {
+          _id: memorial._id, // Add the memorial ID to use for key
+          name: memorial.name,
+          date: nextAnniversary,
+          originalDeathDate: deathDate
+        };
+      })
+      .sort((a, b) => a.date.getTime() - b.date.getTime()) // Sort by anniversary date
+      .slice(0, 3); // Get only the next 3
+  };
+
+  const memorialAnniversaries = getMemorialAnniversaries();
+
+  console.log("MEMORIAL", memorialAnniversaries)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <p>Loading timeline...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -72,7 +141,7 @@ const Timeline = () => {
               <div className="space-y-8">
                 {timelineEvents.map((event, index) => (
                   <Card 
-                    key={event.id}
+                    key={event._id}
                     className="ml-12 p-6 shadow-soft hover:shadow-gentle transition-smooth animate-fade-in"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
@@ -98,7 +167,7 @@ const Timeline = () => {
                           </p>
                         </div>
                         <Badge variant="outline" className="shrink-0">
-                          {event.type}
+                          {event.eventType}
                         </Badge>
                       </div>
 
@@ -106,18 +175,11 @@ const Timeline = () => {
                         {event.description}
                       </p>
 
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" aria-hidden="true" />
-                        <span>{event.location}</span>
-                      </div>
-
-                      {event.linkedTribute && (
-                        <Link href={`/tribute/${event.linkedTribute}`}>
-                          <div className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-smooth mt-3">
-                            <Heart className="w-4 h-4" aria-hidden="true" />
-                            <span className="font-medium">View Tribute</span>
-                          </div>
-                        </Link>
+                      {event.memorialName && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Heart className="w-4 h-4 text-accent" aria-hidden="true" />
+                          <span>In memory of {event.memorialName}</span>
+                        </div>
                       )}
                     </div>
                   </Card>
@@ -126,70 +188,57 @@ const Timeline = () => {
             </div>
           </div>
 
-          {/* Map Column */}
+          {/* Upcoming Anniversaries */}
           <div className="space-y-6 animate-fade-in" style={{ animationDelay: "200ms" }}>
-            <h2 className="text-2xl font-serif font-bold mb-6">
-              Memorial Locations
-            </h2>
-            
-            <Card className="p-6 shadow-soft">
-              <div className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center mb-4">
-                <div className="text-center space-y-2">
-                  <MapPin className="w-12 h-12 mx-auto text-primary" aria-hidden="true" />
-                  <p className="text-sm text-muted-foreground">
-                    Interactive map coming soon
-                  </p>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="font-serif font-bold">Campus Memorial Sites</h3>
-                <ul className="space-y-2 text-sm text-foreground/90">
-                  <li className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-0.5 text-primary shrink-0" aria-hidden="true" />
-                    <span>Memorial Garden - East Campus</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-0.5 text-primary shrink-0" aria-hidden="true" />
-                    <span>University Chapel - Main Building</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-0.5 text-primary shrink-0" aria-hidden="true" />
-                    <span>Remembrance Wall - Library Courtyard</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-0.5 text-primary shrink-0" aria-hidden="true" />
-                    <span>Peace Garden - South Grounds</span>
-                  </li>
-                </ul>
-              </div>
-            </Card>
-
-            {/* Upcoming Anniversaries */}
             <Card className="p-6 shadow-soft">
               <h3 className="font-serif font-bold mb-4">Upcoming Anniversaries</h3>
               <div className="space-y-3">
-                <div className="flex items-start gap-3 pb-3 border-b border-border/50">
-                  <Calendar className="w-5 h-5 text-accent mt-0.5 shrink-0" aria-hidden="true" />
-                  <div>
-                    <p className="font-medium">Dr. Sarah Mitchell</p>
-                    <p className="text-sm text-muted-foreground">1 year memorial - March 15</p>
+                {/* Memorial anniversaries */}
+                {memorialAnniversaries.map((anniversary, index) => (
+                  <div 
+                    key={`memorial-${anniversary._id}-${index}`} 
+                    className={`flex items-start gap-3 ${index < memorialAnniversaries.length - 1 ? 'pb-3 border-b border-border/50' : ''}`}
+                  >
+                    <Calendar className="w-5 h-5 text-accent mt-0.5 shrink-0" aria-hidden="true" />
+                    <div>
+                      <p className="font-medium">{anniversary.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {anniversary.date.toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3 pb-3 border-b border-border/50">
-                  <Calendar className="w-5 h-5 text-accent mt-0.5 shrink-0" aria-hidden="true" />
-                  <div>
-                    <p className="font-medium">James O'Connor</p>
-                    <p className="text-sm text-muted-foreground">Birthday remembrance - June 8</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-accent mt-0.5 shrink-0" aria-hidden="true" />
-                  <div>
-                    <p className="font-medium">Prof. María Rodríguez</p>
-                    <p className="text-sm text-muted-foreground">Memorial service - January 20</p>
-                  </div>
-                </div>
+                ))}
+                
+                {/* Other timeline-based anniversaries */}
+                {timelineEvents
+                  .filter(event => new Date(event.date) > new Date()) // Only future dates
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort by date
+                  .slice(0, 2) // Show only the next 2 (in addition to memorial anniversaries)
+                  .map((event, index) => (
+                    <div 
+                      key={`timeline-${event._id}-${index}`} 
+                      className={`flex items-start gap-3 ${index < 1 || memorialAnniversaries.length > 0 ? 'pb-3 border-b border-border/50' : ''}`}
+                    >
+                      <Calendar className="w-5 h-5 text-accent mt-0.5 shrink-0" aria-hidden="true" />
+                      <div>
+                        <p className="font-medium">{event.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(event.date).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                
+                {memorialAnniversaries.length === 0 && 
+                 timelineEvents.filter(event => new Date(event.date) > new Date()).length === 0 && (
+                  <p className="text-muted-foreground text-center py-4">No upcoming anniversaries</p>
+                )}
               </div>
             </Card>
           </div>

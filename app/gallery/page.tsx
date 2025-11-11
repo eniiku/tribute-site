@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,74 +12,69 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import MemorialCard from "@/components/memorial-card";
-
-// Mock data
-const memorials = [
-  {
-    id: "1",
-    name: "Dr. Sarah Mitchell",
-    role: "Professor of Biology",
-    department: "Natural Sciences",
-    years: "1955 - 2023",
-    imageUrl: "/placeholder.svg",
-    tributeCount: 28
-  },
-  {
-    id: "2",
-    name: "James O'Connor",
-    role: "Director of Student Services",
-    department: "Administration",
-    years: "1948 - 2022",
-    imageUrl: "/placeholder.svg",
-    tributeCount: 42
-  },
-  {
-    id: "3",
-    name: "Prof. María Rodríguez",
-    role: "Chair of Mathematics",
-    department: "Mathematics",
-    years: "1962 - 2024",
-    imageUrl: "/placeholder.svg",
-    tributeCount: 35
-  },
-  {
-    id: "4",
-    name: "Robert Chen",
-    role: "Dean of Engineering",
-    department: "Engineering",
-    years: "1958 - 2023",
-    imageUrl: "/placeholder.svg",
-    tributeCount: 51
-  },
-  {
-    id: "5",
-    name: "Dr. Eleanor Thompson",
-    role: "Head Librarian",
-    department: "Library Services",
-    years: "1945 - 2021",
-    imageUrl: "/placeholder.svg",
-    tributeCount: 33
-  },
-  {
-    id: "6",
-    name: "Michael Patel",
-    role: "Professor of History",
-    department: "Humanities",
-    years: "1960 - 2024",
-    imageUrl: "/placeholder.svg",
-    tributeCount: 19
-  }
-];
+import { getAllMemorials } from '@/lib/sanity-queries';
+import { urlFor } from '@/sanity/lib/image';
 
 const Gallery = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [memorials, setMemorials] = useState([])
+  const [filteredMemorials, setFilteredMemorials] = useState([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [loading, setLoading] = useState(true)
 
-  const filteredMemorials = memorials.filter(memorial => {
-    const matchesSearch = memorial.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDepartment = departmentFilter === "all" || memorial.department === departmentFilter;
-    return matchesSearch && matchesDepartment;
-  });
+  useEffect(() => {
+    const fetchMemorials = async () => {
+      try {
+        const data = await getAllMemorials()
+        // Convert image objects to URLs and set tribute counts
+        const memorialsWithImages = data.map(memorial => ({
+          ...memorial,
+          id: memorial._id, // Map _id to id for compatibility
+          imageUrl: memorial.image ? urlFor(memorial.image).url() : '/placeholder.svg',
+          tributeCount: memorial.tributes ? memorial.tributes.length : 0
+        }))
+        setMemorials(memorialsWithImages)
+        setFilteredMemorials(memorialsWithImages)
+      } catch (error) {
+        console.error('Error fetching all memorials:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMemorials()
+  }, [])
+
+  // Apply client-side filtering
+  useEffect(() => {
+    let result = memorials
+
+    // Apply search filter
+    if (searchQuery) {
+      result = result.filter(memorial => 
+        memorial.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Apply department filter
+    if (departmentFilter !== "all") {
+      result = result.filter(memorial => 
+        memorial.department === departmentFilter
+      )
+    }
+
+    setFilteredMemorials(result)
+  }, [searchQuery, departmentFilter, memorials])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <p>Loading gallery...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -118,12 +113,11 @@ const Gallery = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
-                  <SelectItem value="Natural Sciences">Natural Sciences</SelectItem>
-                  <SelectItem value="Administration">Administration</SelectItem>
-                  <SelectItem value="Mathematics">Mathematics</SelectItem>
-                  <SelectItem value="Engineering">Engineering</SelectItem>
-                  <SelectItem value="Library Services">Library Services</SelectItem>
-                  <SelectItem value="Humanities">Humanities</SelectItem>
+                  {Array.from(new Set(memorials.map(m => m.department))).sort().map(department => (
+                    <SelectItem key={department} value={department}>
+                      {department}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

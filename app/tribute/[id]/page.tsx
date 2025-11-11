@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Heart, MessageCircle, Calendar } from "lucide-react";
 
@@ -10,40 +10,122 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Countdown from "@/components/countdown";
 import TributeForm from "@/components/tribute-form";
+import { getMemorialById } from '@/lib/sanity-queries';
+import { urlFor } from '@/sanity/lib/image';
 
-// Mock data - would come from Sanity
-const memorialData = {
-  "1": {
-    id: "1",
-    name: "Dr. Sarah Mitchell",
-    role: "Professor of Biology",
-    department: "Natural Sciences",
-    years: "1955 - 2023",
-    imageUrl: "/placeholder.svg",
-    biography: "Dr. Sarah Mitchell dedicated over 30 years to advancing biological research and inspiring countless students. Her groundbreaking work in marine biology earned international recognition, but she will be most remembered for her warmth, patience, and unwavering commitment to her students. Sarah believed that every student had potential, and she worked tirelessly to help each one discover their passion for science.",
-    tributes: [
-      {
-        id: "1",
-        author: "John Stevens",
-        relationship: "Former Student",
-        date: "2024-01-15",
-        message: "Dr. Mitchell changed my life. Her enthusiasm for marine biology was infectious, and her belief in me gave me the confidence to pursue my dreams. I wouldn't be where I am today without her guidance."
-      },
-      {
-        id: "2",
-        author: "Maria Garcia",
-        relationship: "Colleague",
-        date: "2024-01-14",
-        message: "Sarah was not only a brilliant scientist but also a dear friend. Her kindness and wisdom touched everyone around her. The department will never be the same without her warm smile and encouraging words."
-      }
-    ]
-  }
-};
+interface Tribute {
+  _id: string;
+  author: string;
+  relationship: string;
+  submittedAt: string;
+  message: string;
+}
+
+interface Memorial {
+  _id: string;
+  name: string;
+  role: string;
+  department: string;
+  birthDate?: string;
+  deathDate?: string;
+  biography?: string;
+  image?: any;
+  tributes: Tribute[];
+}
 
 const Tribute = () => {
   const { id } = useParams();
-  const memorial = memorialData[id as keyof typeof memorialData] || memorialData["1"];
+  const [memorial, setMemorial] = useState<Memorial | null>(null);
   const [showTributeForm, setShowTributeForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchMemorial = async () => {
+      try {
+        const data = await getMemorialById(id as string);
+        
+        if (!data) {
+          setError(true);
+          return;
+        }
+       
+        console.log("DAta-asdfasdfa", data)
+        
+        const processedMemorial = {
+          ...data,
+          id: data._id, // Map _id to id for compatibility
+          imageUrl: data.image ? urlFor(data.image).url() : "/placeholder.svg",
+          // Filter only approved tributes
+          tributes: data.tributes ? data.tributes.filter((t: any) => t.approved) : []
+        };
+
+        console.log("Processed Memorial", processedMemorial)
+        
+        setMemorial(processedMemorial);
+      } catch (err) {
+        console.error('Error fetching memorial:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchMemorial();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <p>Loading memorial details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !memorial) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground">Memorial not found</h1>
+          <p className="text-muted-foreground mt-2">The memorial you're looking for doesn't exist.</p>
+          <Link href="/gallery">
+            <Button className="mt-4">Back to Gallery</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Format years display
+  const yearsDisplay = memorial.birthDate && memorial.deathDate 
+    ? `${memorial.birthDate.split("-")[0]} - ${memorial.deathDate.split("-")[0]}`
+    : memorial.deathDate
+      ? `Died: ${memorial.deathDate.split("-")[0]}`
+      : "Unknown years";
+
+  // Format the death date for the countdown (assuming we want to countdown to memorial anniversaries)
+  let countdownDate = new Date(); // fallback to today if no death date
+  if (memorial.deathDate) {
+    const deathDate = new Date(memorial.deathDate);
+    const thisYearAnniversary = new Date(
+      new Date().getFullYear(),
+      deathDate.getMonth(),
+      deathDate.getDate()
+    );
+    
+    // If the anniversary has already passed this year, use next year's date
+    countdownDate = thisYearAnniversary > new Date() 
+      ? thisYearAnniversary 
+      : new Date(
+          new Date().getFullYear() + 1,
+          deathDate.getMonth(),
+          deathDate.getDate()
+        );
+  }
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -76,7 +158,7 @@ const Tribute = () => {
 
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="w-4 h-4" />
-                <span className="font-medium">{memorial.years}</span>
+                <span className="font-medium">{yearsDisplay}</span>
               </div>
 
               <Separator />
@@ -92,16 +174,18 @@ const Tribute = () => {
         </Card>
 
         {/* Biography */}
-        <Card className="p-8 mb-8 shadow-soft animate-fade-in" style={{ animationDelay: "200ms" }}>
-          <h2 className="text-2xl font-serif font-bold mb-4">Biography</h2>
-          <p className="text-foreground/90 leading-relaxed">{memorial.biography}</p>
-        </Card>
+        {memorial.biography && (
+          <Card className="p-8 mb-8 shadow-soft animate-fade-in" style={{ animationDelay: "200ms" }}>
+            <h2 className="text-2xl font-serif font-bold mb-4">Biography</h2>
+            <p className="text-foreground/90 leading-relaxed">{memorial.biography}</p>
+          </Card>
+        )}
 
         {/* Countdown to Memorial */}
         <div className="mb-8 animate-fade-in" style={{ animationDelay: "250ms" }}>
           <Countdown 
-            targetDate="2025-03-15T14:00:00"
-            eventName="1 Year Memorial Anniversary"
+            targetDate={countdownDate.toISOString()}
+            eventName={`Anniversary of ${memorial.name}`}
           />
         </div>
 
@@ -132,7 +216,7 @@ const Tribute = () => {
           <div className="space-y-4">
             {memorial.tributes.map((tribute, index) => (
               <Card 
-                key={tribute.id} 
+                key={tribute._id} 
                 className="p-6 shadow-gentle animate-fade-in"
                 style={{ animationDelay: `${400 + index * 100}ms` }}
               >
@@ -142,7 +226,7 @@ const Tribute = () => {
                     <p className="text-sm text-muted-foreground">{tribute.relationship}</p>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {new Date(tribute.date).toLocaleDateString('en-US', {
+                    {new Date(tribute.submittedAt).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'

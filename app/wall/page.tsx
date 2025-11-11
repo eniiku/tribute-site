@@ -1,53 +1,98 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Shuffle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getRandomMediaForWall } from '@/lib/sanity-queries';
+import { urlFor } from '@/sanity/lib/image';
 
-// Mock wall images
-const wallImages = [
-  { id: "1", url: "/placeholder.svg", name: "Dr. Sarah Mitchell", height: "tall" },
-  { id: "2", url: "/placeholder.svg", name: "James O'Connor", height: "short" },
-  { id: "3", url: "/placeholder.svg", name: "Prof. María Rodríguez", height: "medium" },
-  { id: "4", url: "/placeholder.svg", name: "Robert Chen", height: "tall" },
-  { id: "5", url: "/placeholder.svg", name: "Dr. Eleanor Thompson", height: "short" },
-  { id: "6", url: "/placeholder.svg", name: "Michael Patel", height: "medium" },
-  { id: "7", url: "/placeholder.svg", name: "Campus Memorial", height: "short" },
-  { id: "8", url: "/placeholder.svg", name: "Annual Gathering", height: "tall" },
-  { id: "9", url: "/placeholder.svg", name: "Memorial Garden", height: "medium" },
-  { id: "10", url: "/placeholder.svg", name: "Faculty Portrait", height: "short" },
-  { id: "11", url: "/placeholder.svg", name: "Remembrance Day", height: "tall" },
-  { id: "12", url: "/placeholder.svg", name: "Chapel Service", height: "medium" },
-];
+interface WallImage {
+  _id: string;
+  title: string;
+  mediaType: string;
+  imageFile?: {
+    asset: {
+      _ref: string;
+      url?: string;
+    };
+  };
+  otherFile?: {
+    asset: {
+      _ref: string;
+      url?: string;
+    };
+  };
+}
 
-const getHeightClass = (height: string) => {
-  switch (height) {
-    case "short": return "row-span-1";
-    case "medium": return "row-span-2";
-    case "tall": return "row-span-3";
+const getHeightClass = (index: number) => {
+  // Use index to determine height variation
+  const remainder = index % 3;
+  switch (remainder) {
+    case 0: return "row-span-1";
+    case 1: return "row-span-2";
+    case 2: return "row-span-3";
     default: return "row-span-2";
   }
 };
 
 const Wall = () => {
-  const [images, setImages] = useState(wallImages);
+  const [displayImages, setDisplayImages] = useState<WallImage[]>([]);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize with shuffled images
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const images = await getRandomMediaForWall(12);
+
+        const processedImages = images.map((image: any) => {
+          // Determine which field contains the image based on mediaType
+          let imageUrl = '';
+          if (image.mediaType === 'image' && image.imageFile && image.imageFile.asset) {
+            // For image assets, use either direct URL or urlFor
+            imageUrl = image.imageFile.asset.url || urlFor(image.imageFile).url();
+          } else if (image.otherFile && image.otherFile.asset) {
+            // For other file types that might contain images
+            imageUrl = image.otherFile.asset.url || urlFor(image.otherFile).url();
+          }
+          
+          return {
+            ...image,
+            imageUrl
+          };
+        });
+        setDisplayImages(processedImages);
+      } catch (error) {
+        console.error('Error fetching wall images:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchImages();
+  }, []);
 
   const shuffleImages = () => {
     setIsShuffling(true);
-    const shuffled = [...images].sort(() => Math.random() - 0.5);
+    const shuffled = [...displayImages].sort(() => Math.random() - 0.5);
     
     setTimeout(() => {
-      setImages(shuffled);
+      setDisplayImages(shuffled);
       setIsShuffling(false);
     }, 300);
   };
 
-  // Shuffle on mount for randomness
-  useEffect(() => {
-    shuffleImages();
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <p>Loading memorial wall...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -79,29 +124,29 @@ const Wall = () => {
             isShuffling ? "opacity-50" : "opacity-100"
           }`}
         >
-          {images.map((image, index) => (
+          {displayImages.map((image, index) => (
             <Card
-              key={`${image.id}-${index}`}
+              key={`${image._id}-${index}`}
               className={`group overflow-hidden shadow-soft hover:shadow-gentle transition-smooth cursor-pointer animate-fade-in ${getHeightClass(
-                image.height
+                index
               )}`}
               style={{ animationDelay: `${index * 30}ms` }}
               role="button"
               tabIndex={0}
-              aria-label={`View photo of ${image.name}`}
+              aria-label={`View photo of ${image.title}`}
             >
               <div className="relative w-full h-full">
                 <img
-                  src={image.url}
-                  alt={image.name}
+                  src={image?.imageUrl}
+                  alt={image.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
                   loading="lazy"
                 />
                 
                 {/* Overlay on hover */}
-                <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-smooth flex items-end p-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-smooth flex items-end p-4">
                   <p className="text-foreground font-medium text-sm">
-                    {image.name}
+                    {image.title}
                   </p>
                 </div>
               </div>

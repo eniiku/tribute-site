@@ -1,54 +1,65 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, Heart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import AudioPlayer from '@/components/audio-player'
-import MemorialCard from '@/components/memorial-card'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { Search, Heart } from 'lucide-react'
+import { urlFor } from '@/sanity/lib/image'
 
-// Mock data for featured memorials
-const featuredMemorials = [
-  {
-    id: '1',
-    name: 'Dr. Sarah Mitchell',
-    role: 'Professor of Biology',
-    department: 'Natural Sciences',
-    years: '1955 - 2023',
-    imageUrl: '/placeholder.svg',
-    tributeCount: 28,
-  },
-  {
-    id: '2',
-    name: "James O'Connor",
-    role: 'Director of Student Services',
-    department: 'Administration',
-    years: '1948 - 2022',
-    imageUrl: '/placeholder.svg',
-    tributeCount: 42,
-  },
-  {
-    id: '3',
-    name: 'Prof. María Rodríguez',
-    role: 'Chair of Mathematics',
-    department: 'Mathematics',
-    years: '1962 - 2024',
-    imageUrl: '/placeholder.svg',
-    tributeCount: 35,
-  },
-]
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import MemorialCard from '@/components/memorial-card'
+import { getFeaturedMemorials } from '@/lib/sanity-queries'
 
 const Home = () => {
+  const [featuredMemorials, setFeaturedMemorials] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchMemorials = async () => {
+      try {
+        const data = await getFeaturedMemorials()
+
+        console.log(data)
+        // Convert image objects to URLs and set tribute counts
+        const memorialsWithImages = data.map((memorial: any) => ({
+          ...memorial,
+          id: memorial._id, // Map _id to id for compatibility
+          imageUrl: memorial.image ? urlFor(memorial.image).url() : '/placeholder.svg',
+          tributeCount: memorial.tributes ? memorial.tributes.length : 0
+        }))
+        setFeaturedMemorials(memorialsWithImages)
+      } catch (error) {
+        console.error('Error fetching featured memorials:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMemorials()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className='min-h-screen pt-16 flex items-center justify-center'>
+        <div className="text-center">
+          <p>Loading memorials...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Filter featured memorials based on search query
+  const filteredMemorials = searchQuery 
+    ? featuredMemorials.filter(memorial => 
+        memorial.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : featuredMemorials
 
   return (
     <div className='min-h-screen pt-16'>
-      {/* Audio Player */}
-      <AudioPlayer />
-
       {/* Hero Section */}
-      <section className='relative py-24 px-4 bg-gradient-to-b from-secondary/30 to-background'>
+      <section className='relative py-24 px-4 bg-linear-to-b from-secondary/30 to-background'>
         <div className='container mx-auto max-w-4xl text-center animate-fade-in-slow'>
           <div className='mb-6 inline-flex items-center gap-2 text-accent'>
             <Heart className='w-5 h-5' />
@@ -105,7 +116,7 @@ const Home = () => {
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-            {featuredMemorials.map((memorial, index) => (
+            {filteredMemorials.map((memorial, index) => (
               <div
                 key={memorial.id}
                 className='animate-fade-in'
@@ -115,6 +126,21 @@ const Home = () => {
               </div>
             ))}
           </div>
+          
+          {/* Show message when no memorials match search */}
+          {searchQuery && filteredMemorials.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-lg text-muted-foreground mb-4">
+                No memorials found matching your search.
+              </p>
+              <Button 
+                variant="outline"
+                onClick={() => setSearchQuery("")}
+              >
+                Clear Search
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 

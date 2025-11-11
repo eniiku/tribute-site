@@ -1,72 +1,106 @@
-"use client"
+'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Image as ImageIcon, Video, Music, Filter } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getAllMedia } from '@/lib/sanity-queries';
+import { urlFor } from '@/sanity/lib/image';
 
-// Mock media data
-const mediaItems = [
-  {
-    id: "1",
-    type: "photo",
-    url: "/placeholder.svg",
-    caption: "Annual Faculty Gathering 2022",
-    category: "Events",
-    date: "2022-05-15"
-  },
-  {
-    id: "2",
-    type: "photo",
-    url: "/placeholder.svg",
-    caption: "Dr. Mitchell's Marine Biology Lab",
-    category: "Research",
-    date: "2023-03-20"
-  },
-  {
-    id: "3",
-    type: "video",
-    url: "/placeholder.svg",
-    caption: "Memorial Service Highlights",
-    category: "Ceremonies",
-    date: "2024-01-10",
-    duration: "12:30"
-  },
-  {
-    id: "4",
-    type: "photo",
-    url: "/placeholder.svg",
-    caption: "Campus Memorial Garden",
-    category: "Places",
-    date: "2023-09-05"
-  },
-  {
-    id: "5",
-    type: "photo",
-    url: "/placeholder.svg",
-    caption: "Prof. Rodríguez Teaching",
-    category: "Teaching",
-    date: "2022-11-12"
-  },
-  {
-    id: "6",
-    type: "video",
-    url: "/placeholder.svg",
-    caption: "Remembrance Day 2023",
-    category: "Ceremonies",
-    date: "2023-11-05",
-    duration: "8:45"
-  }
-];
+interface MediaItem {
+  _id: string;
+  title: string;
+  description?: string;
+  mediaType: string;
+  category: string;
+  imageFile?: {
+    asset: {
+      _ref: string;
+      url?: string;
+    };
+  };
+  otherFile?: {
+    asset: {
+      _ref: string;
+      url?: string;
+    };
+  };
+  createdAt: string;
+}
 
 const MediaGallery = () => {
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMedia = async () => {
+      try {
+        const data = await getAllMedia();
+        // Process the media items to ensure proper structure and URL formatting
+        const processedMediaItems = data.map((item: any) => {
+          // Determine which field contains the file based on mediaType
+          let fileUrl = '';
+          if (item.mediaType === 'image' && item.imageFile && item.imageFile.asset) {
+            fileUrl = item.imageFile.asset.url || urlFor(item.imageFile).url();
+          } else if ((item.mediaType === 'audio' || item.mediaType === 'video') && item.otherFile && item.otherFile.asset) {
+            // For audio/video files, construct URL based on _ref format
+            if (item.otherFile.asset.url) {
+              fileUrl = item.otherFile.asset.url;
+            } else if (item.otherFile.asset._ref) {
+              const assetRef = item.otherFile.asset._ref;
+              const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+              const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+              
+              if (projectId && dataset) {
+                if (assetRef.startsWith('file-')) {
+                  const fileName = assetRef.replace('file-', '');
+                  fileUrl = `https://cdn.sanity.io/files/${projectId}/${dataset}/${fileName}`;
+                } else if (assetRef.startsWith('image-')) {
+                  fileUrl = urlFor({ _ref: assetRef }).url();
+                }
+              }
+            }
+          }
+          
+          return {
+            ...item,
+            file: {
+              asset: {
+                url: fileUrl
+              }
+            },
+            // Convert Sanity's _createdAt to the expected createdAt field
+            createdAt: item._createdAt
+          };
+        });
+        
+        setMediaItems(processedMediaItems);
+      } catch (error) {
+        console.error('Error fetching media:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMedia();
+  }, []);
 
   const filteredMedia = activeTab === "all" 
     ? mediaItems 
-    : mediaItems.filter(item => item.type === activeTab);
+    : mediaItems.filter(item => item.mediaType === activeTab);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <p>Loading media gallery...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -88,7 +122,7 @@ const MediaGallery = () => {
               <Filter className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">All</span>
             </TabsTrigger>
-            <TabsTrigger value="photo" className="flex items-center gap-2">
+            <TabsTrigger value="image" className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">Photos</span>
             </TabsTrigger>
@@ -106,52 +140,51 @@ const MediaGallery = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredMedia.map((item, index) => (
                 <Card 
-                  key={item.id}
-                  className="group overflow-hidden shadow-soft hover:shadow-gentle transition-smooth animate-fade-in cursor-pointer"
+                  key={item._id}
+                  className="group overflow-hidden shadow-soft hover:shadow-gentle transition-smooth animate-fade-in"
                   style={{ animationDelay: `${index * 50}ms` }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`View ${item.caption}`}
                 >
                   {/* Media Thumbnail */}
                   <div className="relative aspect-video bg-secondary/50 overflow-hidden">
-                    <img 
-                      src={item.url} 
-                      alt={item.caption}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
-                    />
+                    {(item.mediaType === 'image') ? (
+                      <img 
+                        src={item.file.asset.url} 
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        {item.mediaType === 'video' && <Video className="w-12 h-12 text-muted-foreground" />}
+                        {item.mediaType === 'audio' && <Music className="w-12 h-12 text-muted-foreground" />}
+                      </div>
+                    )}
                     
                     {/* Type Badge */}
                     <Badge 
                       variant="secondary" 
                       className="absolute top-3 right-3 shadow-soft"
                     >
-                      {item.type === "photo" && <ImageIcon className="w-3 h-3 mr-1" aria-hidden="true" />}
-                      {item.type === "video" && <Video className="w-3 h-3 mr-1" aria-hidden="true" />}
-                      {item.type === "audio" && <Music className="w-3 h-3 mr-1" aria-hidden="true" />}
-                      {item.type}
+                      {item.mediaType === "image" && <ImageIcon className="w-3 h-3 mr-1" aria-hidden="true" />}
+                      {item.mediaType === "video" && <Video className="w-3 h-3 mr-1" aria-hidden="true" />}
+                      {item.mediaType === "audio" && <Music className="w-3 h-3 mr-1" aria-hidden="true" />}
+                      {item.mediaType === "image" ? "Photo" : item.mediaType === "video" ? "Video" : "Audio"}
                     </Badge>
-
-                    {/* Duration for videos */}
-                    {item.duration && (
-                      <Badge 
-                        variant="secondary" 
-                        className="absolute bottom-3 right-3 shadow-soft"
-                      >
-                        {item.duration}
-                      </Badge>
-                    )}
                   </div>
 
                   {/* Caption */}
                   <div className="p-4 space-y-2">
                     <h3 className="font-semibold text-foreground line-clamp-2">
-                      {item.caption}
+                      {item.title}
                     </h3>
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {item.description}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between text-sm">
                       <Badge variant="outline">{item.category}</Badge>
-                      <time className="text-muted-foreground" dateTime={item.date}>
-                        {new Date(item.date).toLocaleDateString('en-US', {
+                      <time className="text-muted-foreground" dateTime={item.createdAt}>
+                        {new Date(item.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short'
                         })}

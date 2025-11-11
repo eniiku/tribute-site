@@ -57,17 +57,31 @@ const TributeForm = ({ memorialId, onSuccess }: TributeFormProps) => {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      toast.success('Tribute submitted', {
-        description:
-          'Your tribute has been submitted and will be reviewed before being published. Thank you for sharing your memories.',
+      const response = await fetch('/api/tributes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          memorialId,
+        }),
       })
 
-      form.reset()
-      onSuccess()
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        toast.success('Tribute submitted', {
+          description:
+            'Your tribute has been submitted and will be reviewed before being published. Thank you for sharing your memories.',
+        })
+        form.reset()
+        onSuccess()
+      } else {
+        throw new Error(result.error || 'Submission failed')
+      }
     } catch (error) {
+      console.error('Error submitting tribute:', error)
       toast.error('Submission failed', {
         description:
           'There was an error submitting your tribute. Please try again.',

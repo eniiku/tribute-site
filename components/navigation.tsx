@@ -8,6 +8,12 @@ import Link, { LinkProps } from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const Navigation = () => {
+  const pathname = usePathname()
+
+  console.log(pathname)
+
+  if (pathname.includes('/studio')) return null
+
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/gallery', label: 'Gallery', icon: Image },
@@ -63,7 +69,7 @@ interface NavLinkProps extends Omit<LinkProps, 'className'> {
 }
 
 const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(
-  ({ className, activeClassName, href, children, ...props}, ref) => {
+  ({ className, activeClassName, href, children, ...props }, ref) => {
     const pathname = usePathname()
 
     const hrefAsString = href.toString()
@@ -78,7 +84,9 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(
         href={href}
         className={cn(className, isActive && activeClassName)}
         {...props}
-      >{children}</Link>
+      >
+        {children}
+      </Link>
     )
   }
 )

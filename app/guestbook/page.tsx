@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
 import { toast } from 'sonner'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BookHeart, Send, CheckCircle } from 'lucide-react'
 
 import { Card } from '@/components/ui/card'
@@ -9,66 +9,83 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { getGuestbookEntries } from '@/lib/sanity-queries'
 
-// Mock guestbook entries
-const guestbookEntries = [
-  {
-    id: '1',
-    author: 'Emily Richardson',
-    message:
-      'This memorial site is a beautiful tribute. Thank you for creating a space where we can honor and remember these wonderful people who touched so many lives.',
-    date: '2024-03-18',
-    location: 'Boston, MA',
-  },
-  {
-    id: '2',
-    author: 'David Kim',
-    message:
-      "I'm grateful to have found this peaceful place to reflect on the memories of those who shaped my education and life. Their legacy lives on through all of us.",
-    date: '2024-03-17',
-    location: 'San Francisco, CA',
-  },
-  {
-    id: '3',
-    author: 'Sarah Martinez',
-    message:
-      'What a touching way to preserve memories and celebrate lives. The stories shared here remind us of the profound impact one person can have on a community.',
-    date: '2024-03-15',
-    location: 'Chicago, IL',
-  },
-  {
-    id: '4',
-    author: "Michael O'Brien",
-    message:
-      'Coming here brings comfort during difficult times. Thank you for maintaining this beautiful space of remembrance.',
-    date: '2024-03-14',
-    location: 'New York, NY',
-  },
-]
+interface GuestbookEntry {
+  _id: string;
+  author: string;
+  message: string;
+  submittedAt: string;
+  location?: string;
+}
 
 const Guestbook = () => {
+  const [entries, setEntries] = useState<GuestbookEntry[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     location: '',
     message: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const data = await getGuestbookEntries();
+        setEntries(data);
+      } catch (error) {
+        console.error('Error fetching guestbook entries:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntries();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // In a real implementation, this would submit to your API
+      // which would then submit to Sanity
+      const response = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          author: formData.name,
+          message: formData.message,
+          location: formData.location,
+          _type: 'tribute', // Map to tribute type in Sanity
+          approved: false // All entries start unapproved
+        }),
+      })
 
-    toast('Message submitted', {
-      description:
-        'Your condolence will appear after moderation. Thank you for your thoughtful words.',
-      duration: 5000,
-    })
-
-    setFormData({ name: '', location: '', message: '' })
-    setIsSubmitting(false)
+      if (response.ok) {
+        toast.success('Message submitted', {
+          description:
+            'Your condolence will appear after moderation. Thank you for your thoughtful words.',
+          duration: 5000,
+        })
+        setFormData({ name: '', location: '', message: '' })
+        
+        // Refresh entries after successful submission
+        const data = await getGuestbookEntries();
+        setEntries(data);
+      } else {
+        throw new Error('Submission failed')
+      }
+    } catch (error) {
+      toast.error('Submission failed', {
+        description: 'There was an error submitting your message. Please try again.',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (
@@ -78,6 +95,16 @@ const Guestbook = () => {
       ...prev,
       [e.target.name]: e.target.value,
     }))
+  }
+
+  if (loading) {
+    return (
+      <div className='min-h-screen pt-24 pb-16 px-4 flex items-center justify-center'>
+        <div className="text-center">
+          <p>Loading guestbook...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -179,51 +206,57 @@ const Guestbook = () => {
             Recent Messages
           </h2>
 
-          {guestbookEntries.map((entry, index) => (
-            <Card
-              key={entry.id}
-              className='p-6 shadow-gentle hover:shadow-soft transition-smooth animate-fade-in'
-              style={{ animationDelay: `${300 + index * 100}ms` }}
-            >
-              <div className='flex items-start gap-4'>
-                <div className='shrink-0 mt-1'>
-                  <div className='w-10 h-10 rounded-full bg-secondary flex items-center justify-center'>
-                    <CheckCircle
-                      className='w-5 h-5 text-primary'
-                      aria-hidden='true'
-                    />
-                  </div>
-                </div>
-
-                <div className='flex-1 space-y-2'>
-                  <div className='flex items-start justify-between gap-4 flex-wrap'>
-                    <div>
-                      <h3 className='font-semibold text-foreground'>
-                        {entry.author}
-                      </h3>
-                      <p className='text-sm text-muted-foreground'>
-                        {entry.location}
-                      </p>
+          {entries.length > 0 ? (
+            entries.map((entry, index) => (
+              <Card
+                key={entry._id}
+                className='p-6 shadow-gentle hover:shadow-soft transition-smooth animate-fade-in'
+                style={{ animationDelay: `${300 + index * 100}ms` }}
+              >
+                <div className='flex items-start gap-4'>
+                  <div className='shrink-0 mt-1'>
+                    <div className='w-10 h-10 rounded-full bg-secondary flex items-center justify-center'>
+                      <CheckCircle
+                        className='w-5 h-5 text-primary'
+                        aria-hidden='true'
+                      />
                     </div>
-                    <time
-                      className='text-sm text-muted-foreground'
-                      dateTime={entry.date}
-                    >
-                      {new Date(entry.date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </time>
                   </div>
 
-                  <p className='text-foreground/90 leading-relaxed'>
-                    {entry.message}
-                  </p>
+                  <div className='flex-1 space-y-2'>
+                    <div className='flex items-start justify-between gap-4 flex-wrap'>
+                      <div>
+                        <h3 className='font-semibold text-foreground'>
+                          {entry.author}
+                        </h3>
+                        <p className='text-sm text-muted-foreground'>
+                          {entry.location || 'Anonymous'}
+                        </p>
+                      </div>
+                      <time
+                        className='text-sm text-muted-foreground'
+                        dateTime={entry.submittedAt}
+                      >
+                        {new Date(entry.submittedAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </time>
+                    </div>
+
+                    <p className='text-foreground/90 leading-relaxed'>
+                      {entry.message}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No messages yet. Be the first to leave a message.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

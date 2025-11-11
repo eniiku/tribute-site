@@ -5,28 +5,125 @@ import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { getMediaByCategory } from "@/lib/sanity-queries";
+import { urlFor } from "@/sanity/lib/image";
 
-const AudioPlayer = () => {
+interface AudioItem {
+  _id: string;
+  title: string;
+  mediaType: string;
+  imageFile?: {
+    asset: {
+      _ref: string;
+      url?: string;
+    };
+  };
+  otherFile?: {
+    asset: {
+      _ref: string;
+      url?: string;
+    };
+  };
+}
+
+interface AudioPlayerProps {
+  defaultAudioUrl?: string;
+}
+
+const AudioPlayer = ({ defaultAudioUrl = "/audio/memorial-music.mp3" }: AudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolume] = useState([30]);
   const [isVisible, setIsVisible] = useState(true);
+  const [audioUrl, setAudioUrl] = useState<string>(defaultAudioUrl);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Remember mute state in localStorage
+  // Fetch audio from Sanity on component mount
   useEffect(() => {
+    const fetchAudio = async () => {
+      try {
+        const audioMedia = await getMediaByCategory('background-music');
+
+        if (audioMedia && audioMedia.length > 0) {
+          // Use the first audio file found in the background-music category
+          const audio = audioMedia[0];
+          
+          // Determine which field contains the audio file based on mediaType
+          let assetData = null;
+          if (audio.mediaType === 'audio' && audio.otherFile && audio.otherFile.asset) {
+            assetData = audio.otherFile.asset;
+          } else if (audio.mediaType === 'image' && audio.imageFile && audio.imageFile.asset) {
+            assetData = audio.imageFile.asset; // fallback, shouldn't happen for audio
+          }
+          
+          if (assetData) {
+            if (assetData.url) {
+              // If direct URL is available
+              setAudioUrl(assetData.url);
+            } else if (assetData._ref) {
+              // Construct URL for file assets
+              const assetRef = assetData._ref;
+              const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+              const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+              
+              if (projectId && dataset) {
+                // Determine if it's an image or file asset based on the _ref format
+                if (assetRef.startsWith('image-')) {
+                  // It's an image asset, use the urlFor function
+                  try {
+                    // Create a temporary image object for urlFor
+                    const tempImage = {
+                      _ref: assetRef
+                    };
+                    setAudioUrl(urlFor(tempImage).url());
+                  } catch (e) {
+                    console.error('Error creating image URL:', e);
+                  }
+                } else if (assetRef.startsWith('file-')) {
+                  // It's a file asset, construct the file URL
+                  // Extract filename from "file-{sha256}-{extension}" format
+                  const fileName = assetRef.replace('file-', '');
+                  setAudioUrl(`https://cdn.sanity.io/files/${projectId}/${dataset}/${fileName}`);
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching audio from Sanity:', error);
+        // Keep the default audio URL if fetching fails
+      }
+    };
+
+    fetchAudio();
+
+    // Remember mute state in localStorage
     const savedMute = localStorage.getItem("audioMuted");
     if (savedMute !== null) {
       setIsMuted(savedMute === "true");
     }
   }, []);
 
+  // Update audio element when audioUrl changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.load();
+      if (isPlaying && !isMuted) {
+        // Play if it was playing before and we have a new audio source
+        audioRef.current.play().catch(e => console.error('Error playing audio after source change:', e));
+      }
+    }
+  }, [audioUrl]);
+
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play();
+        audioRef.current.play().catch(e => {
+          console.error('Error playing audio:', e);
+          setIsPlaying(false);
+        });
         if (isMuted) {
           setIsMuted(false);
           audioRef.current.muted = false;
@@ -116,7 +213,7 @@ const AudioPlayer = () => {
         muted={isMuted}
         aria-label="Background music player"
       >
-        <source src="/audio/memorial-music.mp3" type="audio/mpeg" />
+        <source src={audioUrl} type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
     </div>
