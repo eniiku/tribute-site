@@ -10,17 +10,27 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { getGuestbookEntries } from '@/lib/sanity-queries'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationLink,
+  PaginationEllipsis,
+  PaginationNext,
+} from '@/components/ui/pagination'
 
 interface GuestbookEntry {
-  _id: string;
-  author: string;
-  message: string;
-  submittedAt: string;
-  location?: string;
+  _id: string
+  author: string
+  message: string
+  submittedAt: string
+  location?: string
+  relationship?: string // This is added to match the return from getGuestbookEntries
 }
 
 const Guestbook = () => {
-  const [entries, setEntries] = useState<GuestbookEntry[]>([]);
+  const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -29,28 +39,35 @@ const Guestbook = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const entriesPerPage = 10
+  const totalEntries = entries.length
+  const totalPages = Math.ceil(totalEntries / entriesPerPage)
+  const startIndex = (currentPage - 1) * entriesPerPage
+  const endIndex = startIndex + entriesPerPage
+  const currentEntries = entries.slice(startIndex, endIndex)
+
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const data = await getGuestbookEntries();
-        setEntries(data);
+        const data = await getGuestbookEntries()
+        setEntries(data)
       } catch (error) {
-        console.error('Error fetching guestbook entries:', error);
+        console.error('Error fetching guestbook entries:', error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchEntries();
-  }, []);
+    fetchEntries()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      // In a real implementation, this would submit to your API
-      // which would then submit to Sanity
       const response = await fetch('/api/guestbook', {
         method: 'POST',
         headers: {
@@ -60,32 +77,36 @@ const Guestbook = () => {
           author: formData.name,
           message: formData.message,
           location: formData.location,
-          _type: 'tribute', // Map to tribute type in Sanity
-          approved: false // All entries start unapproved
         }),
       })
 
       if (response.ok) {
         toast.success('Message submitted', {
           description:
-            'Your condolence will appear after moderation. Thank you for your thoughtful words.',
+            'Your message will appear after moderation. Thank you for your thoughtful words.',
           duration: 5000,
         })
         setFormData({ name: '', location: '', message: '' })
-        
+
         // Refresh entries after successful submission
-        const data = await getGuestbookEntries();
-        setEntries(data);
+        const data = await getGuestbookEntries()
+        setEntries(data)
       } else {
         throw new Error('Submission failed')
       }
     } catch (error) {
       toast.error('Submission failed', {
-        description: 'There was an error submitting your message. Please try again.',
+        description:
+          'There was an error submitting your message. Please try again.',
       })
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleChange = (
@@ -100,7 +121,7 @@ const Guestbook = () => {
   if (loading) {
     return (
       <div className='min-h-screen pt-24 pb-16 px-4 flex items-center justify-center'>
-        <div className="text-center">
+        <div className='text-center'>
           <p>Loading guestbook...</p>
         </div>
       </div>
@@ -108,21 +129,31 @@ const Guestbook = () => {
   }
 
   return (
-    <div className='min-h-screen pt-24 pb-16 px-4'>
+    <div className='min-h-screen pt-28 pb-20 px-6'>
       <div className='container mx-auto max-w-4xl'>
         {/* Header */}
-        <div className='text-center mb-12 animate-fade-in'>
-          <div className='inline-flex items-center gap-2 text-accent mb-4'>
-            <BookHeart className='w-6 h-6' aria-hidden='true' />
+        <header className='text-center mb-16 space-y-6 animate-fade-in'>
+          <div className='inline-block'>
+            <div className='text-accent/80 text-sm font-medium tracking-[0.3em] uppercase mb-4'>
+              National Gratitude
+            </div>
           </div>
-          <h1 className='text-4xl md:text-5xl font-serif font-bold mb-4'>
-            Guestbook
+
+          <h1 className='font-serif font-bold text-foreground'>
+            National Guestbook
           </h1>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
-            Share your condolences and reflections. Your words of comfort and
-            remembrance help us honor those we've lost and support one another.
+
+          <div className='h-px w-24 mx-auto bg-linear-to-r from-transparent via-accent/40 to-transparent' />
+
+          <p className='text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed'>
+            A shared space for Nigerians to express gratitude, remembrance, and
+            pride for all soldiers.
           </p>
-        </div>
+
+          <p className='text-accent/80 font-serif text-xl italic'>
+            Your words of honour become part of our collective memory.
+          </p>
+        </header>
 
         {/* Submission Form */}
         <Card
@@ -199,63 +230,122 @@ const Guestbook = () => {
 
         {/* Entries */}
         <div className='space-y-6'>
-          <h2
-            className='text-2xl font-serif font-bold mb-6 animate-fade-in'
+          <div
+            className='flex items-center justify-between mb-6 animate-fade-in'
             style={{ animationDelay: '200ms' }}
           >
-            Recent Messages
-          </h2>
+            <h2 className='text-2xl font-serif font-bold'>Recent Messages</h2>
+            <p className='text-sm text-muted-foreground'>
+              Showing {startIndex + 1}-{Math.min(endIndex, totalEntries)} of{' '}
+              {totalEntries} messages
+            </p>
+          </div>
 
-          {entries.length > 0 ? (
-            entries.map((entry, index) => (
-              <Card
-                key={entry._id}
-                className='p-6 shadow-gentle hover:shadow-soft transition-smooth animate-fade-in'
-                style={{ animationDelay: `${300 + index * 100}ms` }}
-              >
-                <div className='flex items-start gap-4'>
-                  <div className='shrink-0 mt-1'>
-                    <div className='w-10 h-10 rounded-full bg-secondary flex items-center justify-center'>
-                      <CheckCircle
-                        className='w-5 h-5 text-primary'
-                        aria-hidden='true'
-                      />
-                    </div>
-                  </div>
-
-                  <div className='flex-1 space-y-2'>
-                    <div className='flex items-start justify-between gap-4 flex-wrap'>
-                      <div>
-                        <h3 className='font-semibold text-foreground'>
-                          {entry.author}
-                        </h3>
-                        <p className='text-sm text-muted-foreground'>
-                          {entry.location || 'Anonymous'}
-                        </p>
-                      </div>
-                      <time
-                        className='text-sm text-muted-foreground'
-                        dateTime={entry.submittedAt}
-                      >
-                        {new Date(entry.submittedAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </time>
-                    </div>
-
-                    <p className='text-foreground/90 leading-relaxed'>
-                      {entry.message}
-                    </p>
+          {currentEntries.map((entry, index) => (
+            <Card
+              key={entry._id}
+              className='p-6 shadow-gentle hover:shadow-soft transition-smooth animate-fade-in'
+              style={{ animationDelay: `${300 + index * 100}ms` }}
+            >
+              <div className='flex items-start gap-4'>
+                <div className='shrink-0 mt-1'>
+                  <div className='w-10 h-10 rounded-full bg-secondary flex items-center justify-center'>
+                    <CheckCircle
+                      className='w-5 h-5 text-primary'
+                      aria-hidden='true'
+                    />
                   </div>
                 </div>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No messages yet. Be the first to leave a message.</p>
-            </div>
+
+                <div className='flex-1 space-y-2'>
+                  <div className='flex items-start justify-between gap-4 flex-wrap'>
+                    <div>
+                      <h3 className='font-semibold text-foreground'>
+                        {entry.author}
+                      </h3>
+                      <p className='text-sm text-muted-foreground'>
+                        {entry.location || entry.relationship}
+                      </p>
+                    </div>
+                    <time
+                      className='text-sm text-muted-foreground'
+                      dateTime={entry.submittedAt}
+                    >
+                      {new Date(entry.submittedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </time>
+                  </div>
+
+                  <p className='text-foreground/90 leading-relaxed'>
+                    {entry.message}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination className='mt-8'>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() =>
+                      currentPage > 1 && handlePageChange(currentPage - 1)
+                    }
+                    className={
+                      currentPage === 1
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
+                    }
+                  />
+                </PaginationItem>
+
+                {[...Array(totalPages)].map((_, i) => {
+                  const page = i + 1
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                          className='cursor-pointer'
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return <PaginationEllipsis key={page} />
+                  }
+                  return null
+                })}
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() =>
+                      currentPage < totalPages &&
+                      handlePageChange(currentPage + 1)
+                    }
+                    className={
+                      currentPage === totalPages
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           )}
         </div>
       </div>

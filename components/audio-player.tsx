@@ -116,7 +116,7 @@ const AudioPlayer = ({ defaultAudioUrl = "/audio/memorial-music.mp3" }: AudioPla
       audioRef.current.volume = volume[0] / 100;
       audioRef.current.muted = isMuted;
       
-      // Load the new source and preserve the state
+      // Load the new source and preserve the state only when audioUrl changes
       audioRef.current.load();
       
       if (isPlaying && !isMuted) {
@@ -124,7 +124,15 @@ const AudioPlayer = ({ defaultAudioUrl = "/audio/memorial-music.mp3" }: AudioPla
         audioRef.current.play().catch(e => console.error('Error playing audio after source change:', e));
       }
     }
-  }, [audioUrl, volume, isMuted]);
+  }, [audioUrl]); // Only audioUrl should trigger this effect
+
+  // Update volume and mute state immediately when they change
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume[0] / 100;
+      audioRef.current.muted = isMuted;
+    }
+  }, [volume, isMuted]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -168,46 +176,44 @@ const AudioPlayer = ({ defaultAudioUrl = "/audio/memorial-music.mp3" }: AudioPla
   };
 
   return (
-    <div 
+  <div 
       className={cn(
-        "fixed bottom-6 right-6 z-50 transition-smooth",
+        "fixed bottom-4 right-4 z-50 transition-smooth",
         isVisible ? "animate-fade-in" : "opacity-0 pointer-events-none"
       )}
       role="region"
       aria-label="Audio player"
     >
-      <div className="backdrop-blur-md bg-card/90 border border-border/50 rounded-full shadow-soft px-4 py-3 flex items-center gap-3">
+      <div className="backdrop-blur-md bg-card/90 border border-border/50 rounded-full shadow-sm px-1.5 py-1 flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
           onClick={togglePlay}
           aria-label={isPlaying ? "Pause background music" : "Play background music"}
-          className="h-10 w-10 rounded-full hover:bg-primary/10"
+          className="h-6 w-6 rounded-full hover:bg-primary/10"
         >
           {isPlaying ? (
-            <Pause className="w-4 h-4 fill-current" aria-hidden="true" />
+            <Pause className="w-2.5 h-2.5 fill-current" aria-hidden="true" />
           ) : (
-            <Play className="w-4 h-4 fill-current" aria-hidden="true" />
+            <Play className="w-2.5 h-2.5 fill-current" aria-hidden="true" />
           )}
         </Button>
-
-        <div className="h-6 w-px bg-border" aria-hidden="true" />
 
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleMute}
           aria-label={isMuted ? "Unmute audio" : "Mute audio"}
-          className="h-10 w-10 rounded-full hover:bg-primary/10"
+          className="h-6 w-6 rounded-full hover:bg-primary/10"
         >
           {isMuted ? (
-            <VolumeX className="w-4 h-4" aria-hidden="true" />
+            <VolumeX className="w-2.5 h-2.5" aria-hidden="true" />
           ) : (
-            <Volume2 className="w-4 h-4" aria-hidden="true" />
+            <Volume2 className="w-2.5 h-2.5" aria-hidden="true" />
           )}
         </Button>
 
-        <div className="w-20">
+        <div className="w-12">
           <Slider
             value={volume}
             onValueChange={handleVolumeChange}
@@ -225,7 +231,7 @@ const AudioPlayer = ({ defaultAudioUrl = "/audio/memorial-music.mp3" }: AudioPla
         muted={isMuted}
         aria-label="Background music player"
       >
-        <source src={audioUrl} type="audio/mpeg" />
+        <source src="/audio/memorial-music.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
     </div>

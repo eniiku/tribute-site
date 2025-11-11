@@ -6,7 +6,8 @@ export async function getFeaturedMemorials() {
     _id,
     name,
     role,
-    department,
+    unit,
+    status,
     "years": coalesce(
       (select(defined(birthDate) => birthDate, "") + " - " + select(defined(deathDate) => deathDate, "")),
       "Unknown years"
@@ -51,7 +52,8 @@ export async function getAllMemorials() {
     _id,
     name,
     role,
-    department,
+    unit,
+    status,
     "years": coalesce(
       (select(defined(birthDate) => birthDate, "") + " - " + select(defined(deathDate) => deathDate, "")),
       "Unknown years"
@@ -99,7 +101,8 @@ export async function getMemorialById(id: string) {
       _id,
       name,
       role,
-      department,
+      unit,
+      status,
       birthDate,
       deathDate,
       biography,
@@ -141,7 +144,7 @@ export async function getTimelineEvents() {
     _id,
     title,
     date,
-    description,
+    description[],
     eventType,
     image,
     "memorialName": memorial->name

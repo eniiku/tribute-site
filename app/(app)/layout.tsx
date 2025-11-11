@@ -5,6 +5,7 @@ import AudioPlayer from '@/components/audio-player'
 import { Toaster } from '@/components/ui/sonner'
 
 import '../globals.css'
+import Footer from '@/components/footer'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -34,6 +35,8 @@ export default function RootLayout({
         <Navigation />
         <AudioPlayer />
         {children}
+        <Footer />
+        
         <Toaster />
       </body>
     </html>

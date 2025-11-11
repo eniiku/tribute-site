@@ -12,6 +12,7 @@ import Countdown from "@/components/countdown";
 import TributeForm from "@/components/tribute-form";
 import { getMemorialById } from '@/lib/sanity-queries';
 import { urlFor } from '@/sanity/lib/image';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 interface Tribute {
   _id: string;
@@ -27,7 +28,8 @@ interface Memorial {
   _id: string;
   name: string;
   role: string;
-  department: string;
+  unit: string;
+  status?: string;
   birthDate?: string;
   deathDate?: string;
   biography?: string;
@@ -41,6 +43,19 @@ const Tribute = () => {
   const [showTributeForm, setShowTributeForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const tributesPerPage = 10;
+  const totalTributes = memorial?.tributes?.length;
+  const totalPages = Math.ceil(totalTributes / tributesPerPage);
+  const startIndex = (currentPage - 1) * tributesPerPage;
+  const endIndex = startIndex + tributesPerPage;
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const fetchMemorial = async () => {
@@ -90,8 +105,8 @@ const Tribute = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground">Memorial not found</h1>
           <p className="text-muted-foreground mt-2">The memorial you're looking for doesn't exist.</p>
-          <Link href="/gallery">
-            <Button className="mt-4">Back to Gallery</Button>
+          <Link href="/wall">
+            <Button className="mt-4">Back to Wall of Honour</Button>
           </Link>
         </div>
       </div>
@@ -129,10 +144,10 @@ const Tribute = () => {
     <div className="min-h-screen pt-24 pb-16 px-4">
       <div className="container mx-auto max-w-4xl">
         {/* Back Button */}
-        <Link href="/gallery">
+        <Link href="/wall">
           <Button variant="ghost" className="mb-8 -ml-4 animate-fade-in">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Gallery
+            Back to Wall of Honour
           </Button>
         </Link>
 
@@ -211,6 +226,11 @@ const Tribute = () => {
             </Card>
           )}
 
+          {/* Tribute counter */}
+         {totalTributes > 0 && <p className="text-sm text-muted-foreground mb-4">
+            Showing {startIndex + 1}-{Math.min(endIndex, totalTributes)} of {totalTributes} tributes
+          </p>}
+
           <div className="space-y-4">
             {memorial.tributes.map((tribute, index) => (
               <Card 
@@ -235,6 +255,51 @@ const Tribute = () => {
               </Card>
             ))}
           </div>
+
+           {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination className="mt-8">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                {[...Array(totalPages)].map((_, i) => {
+                  const page = i + 1;
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    return <PaginationEllipsis key={page} />;
+                  }
+                  return null;
+                })}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </div>
       </div>
     </div>

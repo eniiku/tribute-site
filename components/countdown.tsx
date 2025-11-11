@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react";
 import { Calendar, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -42,7 +40,7 @@ const Countdown = ({ targetDate, eventName }: CountdownProps) => {
   }
 
   return (
-    <Card className="p-6 shadow-soft animate-fade-in bg-secondary/30 border-accent/20">
+    <Card className="p-6 shadow-soft animate-fade-in">
       <div className="flex items-start gap-4">
         <div className="shrink-0">
           <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">

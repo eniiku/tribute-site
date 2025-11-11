@@ -9,50 +9,52 @@ import { usePathname } from 'next/navigation'
 
 const Navigation = () => {
   const navItems = [
-    { to: '/', label: 'Home', icon: Home },
-    { to: '/gallery', label: 'Gallery', icon: Image },
-    { to: '/timeline', label: 'Timeline', icon: Clock },
-    { to: '/guestbook', label: 'Guestbook', icon: BookHeart },
-    { to: '/wall', label: 'Wall', icon: Grid3x3 },
-  ]
+    { to: "/", label: "Home", icon: Home },
+    { to: "/wall", label: "Wall of Honour", icon: Grid3x3 },
+    { to: "/timeline", label: "Timeline", icon: Clock },
+    { to: "/gallery", label: "Gallery", icon: Image },
+    { to: "/guestbook", label: "Guestbook", icon: BookHeart },
+  ];
 
   return (
-    <nav
-      className='fixed top-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-b border-border/50 shadow-gentle'
-      role='navigation'
-      aria-label='Main navigation'
+    <nav 
+      className="fixed top-0 left-0 right-0 z-50 glass-effect shadow-elegant"
+      role="navigation"
+      aria-label="Main navigation"
     >
-      <div className='container mx-auto px-4'>
-        <div className='flex items-center justify-between h-16'>
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
-          <Link
-            href='/'
-            className='font-serif text-xl font-bold text-foreground hover:text-primary transition-smooth'
+          <NavLink 
+            href="/" 
+            className="font-serif text-2xl font-semibold text-foreground hover:text-accent transition-smooth tracking-tight"
           >
-            Tribute Garden
-          </Link>
+            Thank a <span className="text-accent">SOLDIER</span>
+          </NavLink>
 
           {/* Navigation Links */}
-          <div className='flex items-center gap-1'>
+          <div className="flex items-center gap-2">
             {navItems.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 href={to}
-                className={
-                  'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-smooth text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                }
-                activeClassName='text-primary bg-secondary font-semibold'
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-smooth",
+                  "text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                )}
+                activeClassName="text-accent bg-accent/10 font-semibold"
               >
-                <Icon className='w-4 h-4' aria-hidden='true' />
-                <span className='hidden sm:inline'>{label}</span>
+                <Icon className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{label}</span>
               </NavLink>
             ))}
           </div>
         </div>
       </div>
     </nav>
-  )
-}
+  );
+};
+
 
 export default Navigation
 

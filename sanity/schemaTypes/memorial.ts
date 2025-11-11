@@ -17,9 +17,22 @@ export default defineType({
       type: 'string',
     }),
     defineField({
-      name: 'department',
-      title: 'Department',
+      name: 'unit',
+      title: 'Unit',
       type: 'string',
+    }),
+    defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Fallen', value: 'fallen' },
+          { title: 'Serving', value: 'serving' },
+          { title: 'Gallantry', value: 'gallantry' },
+        ],
+      },
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'birthDate',

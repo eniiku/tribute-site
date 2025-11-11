@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       author,
       message,
       location: location || 'Visitor',
-      approved: true,  // Auto-approve guestbook entries
+      approved: false,
       submittedAt: new Date().toISOString(),
     };
 
