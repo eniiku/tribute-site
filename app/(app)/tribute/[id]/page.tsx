@@ -166,7 +166,7 @@ const Tribute = () => {
               <div>
                 <h1 className="text-4xl font-serif font-bold mb-2">{memorial.name}</h1>
                 <p className="text-xl text-primary font-medium mb-1">{memorial.role}</p>
-                <p className="text-muted-foreground">{memorial.department}</p>
+                <p className="text-muted-foreground">{memorial.unit}</p>
               </div>
 
               <div className="flex items-center gap-2 text-muted-foreground">
