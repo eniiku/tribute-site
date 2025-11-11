@@ -29,7 +29,7 @@ const Navigation = () => {
             href="/" 
             className="font-serif text-2xl font-semibold text-foreground hover:text-accent transition-smooth tracking-tight"
           >
-            Thank a <span className="text-accent">SOLDIER</span>
+            Thank A <span className="text-accent">Soldier</span>
           </NavLink>
 
           {/* Navigation Links */}

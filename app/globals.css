@@ -47,26 +47,26 @@
 }
 
 :root {
-  --background: oklch(4% 0 0);
+  --background: oklch(25% 0.02 166);
   --foreground: oklch(96% 0 0);
 
-  --card: oklch(15.7% 0.035 166.5);
+  --card: oklch(30% 0.035 166.5);
   --card-foreground: oklch(96% 0 0);
 
-  --popover: oklch(15.7% 0.035 166.5);
+  --popover: oklch(30% 0.035 166.5);
   --popover-foreground: oklch(96% 0 0);
 
   /* Deep Woodland Green - Primary (Most Dominant) */
-  --primary: oklch(28.2% 0.076 166);
+  --primary: oklch(42% 0.1 166);
   --primary-foreground: oklch(98% 0 0);
 
   /* Deep Navy/Black - Secondary */
-  --secondary: oklch(21% 0.054 261.2);
+  --secondary: oklch(35% 0.06 261.2);
   --secondary-foreground: oklch(98% 0 0);
 
   /* Tan/Earth Tones - Supporting Colors */
-  --muted: oklch(21.4% 0.029 80.2);
-  --muted-foreground: oklch(56.7% 0.024 80.7);
+  --muted: oklch(35% 0.035 80.2);
+  --muted-foreground: oklch(70% 0.028 80.7);
 
   /* Deep Maroon/Burgundy - Dignified Accent (Use Sparingly for CTAs & Important Elements) */
   --accent: oklch(42.6% 0.125 40);
@@ -76,9 +76,9 @@
   --destructive: oklch(53.2% 0.18 40);
   --destructive-foreground: oklch(98% 0 0);
 
-  --border: oklch(24.1% 0.026 166.8);
-  --input: oklch(18.9% 0.036 166.4);
-  --ring: oklch(28.2% 0.076 166);
+  --border: oklch(30% 0.026 166.8);
+  --input: oklch(36% 0.036 166.4);
+  --ring: oklch(35% 0.09 166);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -98,19 +98,19 @@
   /* Refined Gradients - Green/Black Dominant */
   --gradient-hero: linear-gradient(
     165deg,
-    hsl(145 40% 18% / 0.9) 0%,
-    hsl(220 30% 12% / 0.9) 50%,
-    hsl(0 0% 4%) 100%
+    hsl(145 40% 24% / 0.9) 0%,
+    hsl(220 30% 18% / 0.9) 50%,
+    hsl(0 0% 12%) 100%
   );
   --gradient-card: linear-gradient(
     135deg,
-    hsl(145 20% 10%) 0%,
-    hsl(145 15% 8%) 100%
+    hsl(145 20% 16%) 0%,
+    hsl(145 15% 14%) 100%
   );
   --gradient-glass: linear-gradient(
     135deg,
-    hsl(145 20% 8% / 0.7) 0%,
-    hsl(145 15% 6% / 0.5) 100%
+    hsl(145 20% 14% / 0.7) 0%,
+    hsl(145 15% 12% / 0.5) 100%
   );
 
   /* Refined Shadows */

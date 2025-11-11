@@ -134,10 +134,7 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-        <div className='text-center mb-4'>
-          <h3 className='text-lg font-serif font-semibold mb-2'>
-            Add New Memorial
-          </h3>
+        <div className='text-center mb-4'> 
           <p className='text-sm text-muted-foreground'>
             Your submission will be reviewed before being published to ensure accuracy and respect.
           </p>

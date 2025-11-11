@@ -114,7 +114,7 @@ const Home = () => {
             </div>
 
             <h1 className='font-serif font-bold text-foreground leading-[1.1] tracking-tight'>
-              Thank a <span className='text-accent'>SOLDIER</span>
+              Thank A <span className='text-accent'>Soldier</span>
             </h1>
 
             <p className='text-lg md:text-xl text-foreground/75 leading-relaxed max-w-3xl mx-auto'>

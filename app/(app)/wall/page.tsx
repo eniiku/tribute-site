@@ -136,7 +136,7 @@ const Gallery = () => {
           {/* Fallen Soldiers */}
           <TabsContent value="fallen" className="space-y-10 animate-fade-in">
             <div className="text-center space-y-6">
-              <h2 className="text-3xl font-serif font-semibold text-foreground">
+            <h2 className="text-3xl font-serif font-semibold text-foreground">
                 Fallen Soldiers
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">

@@ -3,7 +3,7 @@ import type {StructureResolver} from 'sanity/structure'
 // https://www.sanity.io/docs/structure-builder-cheat-sheet
 export const structure: StructureResolver = (S) =>
   S.list()
-    .title('Thank a SOLDIER - Content Management')
+    .title('Thank A Soldier - Content Management')
     .items([
       // Wall of Honour section
       S.listItem()
