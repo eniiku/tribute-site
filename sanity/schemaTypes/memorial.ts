@@ -2,7 +2,7 @@ import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'memorial',
-  title: 'Memorial',
+  title: 'Wall of Honour - Memorial',
   type: 'document',
   fields: [
     defineField({
@@ -56,6 +56,13 @@ export default defineType({
       options: {
         hotspot: true,
       },
+    }),
+    defineField({
+      name: 'approved',
+      title: 'Approved for Publication',
+      type: 'boolean',
+      description: 'Check this to make the memorial visible on the website',
+      initialValue: true,  // Default to true for official memorials
     }),
     defineField({
       name: 'featured',

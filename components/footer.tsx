@@ -11,7 +11,7 @@ const Footer = () => {
             <div className='flex items-center gap-2'>
               <Shield className='w-5 h-5 text-accent' />
               <h3 className='font-serif text-xl font-semibold text-foreground'>
-                Thank a SOLDIER
+                Thank A Soldier
               </h3>
             </div>
             <p className='text-sm text-muted-foreground leading-relaxed'>
@@ -62,7 +62,7 @@ const Footer = () => {
 
           <div className='space-y-4'>
             <h4 className='font-semibold text-foreground'>
-              Armed Forces Remembrance Day
+              Armed Forces Celebration and Remembrance Day
             </h4>
             <p className='text-sm text-muted-foreground leading-relaxed'>
               January 15th — A day to remember and honor those who made the
@@ -77,7 +77,7 @@ const Footer = () => {
             Nigerian heroes
           </p>
           <p className='text-center text-xs text-muted-foreground/60'>
-            © {new Date().getFullYear()} Thank a SOLDIER. All rights reserved.
+            © {new Date().getFullYear()} Thank A Soldier. All rights reserved.
           </p>
         </div>
       </div>

@@ -18,7 +18,7 @@ const crimson_pro = Crimson_Pro({
 })
 
 export const metadata: Metadata = {
-  title: 'Thank a SOLDIER - Honouring Our Heroes',
+  title: 'Thank A Soldier - Honouring Our Heroes',
   description: 'A national space to honour all Nigerian soldiers - those who gave their lives and those who continue to serve and protect our nation.',
 }
 

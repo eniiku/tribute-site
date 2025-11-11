@@ -1,17 +1,23 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import MemorialCard from "@/components/memorial-card";
+import MemorialForm from "@/components/memorial-form";
 import { getAllMemorials } from '@/lib/sanity-queries';
 import { urlFor } from '@/sanity/lib/image';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Gallery = () => {
   const [memorials, setMemorials] = useState([])
   const [filteredMemorials, setFilteredMemorials] = useState([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [showMemorialModal, setShowMemorialModal] = useState(false)
+  const [modalStatus, setModalStatus] = useState<'fallen' | 'serving' | 'gallantry' | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -136,6 +142,16 @@ const Gallery = () => {
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Tributes to those who made the ultimate sacrifice.
               </p>
+               <Button 
+                 onClick={() => {
+                   setModalStatus('fallen');
+                   setShowMemorialModal(true);
+                 }}
+                 className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground shadow-glow transition-smooth"
+               >
+                <Plus className="w-4 h-4" />
+                Add a Fallen Hero Memorial
+              </Button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {filteredMemorials
@@ -155,6 +171,16 @@ const Gallery = () => {
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Messages of encouragement, thanks, and recognition for soldiers actively defending the nation.
               </p>
+               <Button 
+                 onClick={() => {
+                   setModalStatus('serving');
+                   setShowMemorialModal(true);
+                 }}
+                 className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground shadow-glow transition-smooth"
+               >
+                <Plus className="w-4 h-4" />
+                Add a Serving Soldier Memorial
+              </Button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {filteredMemorials
@@ -174,6 +200,16 @@ const Gallery = () => {
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Featured soldiers recognised for acts of courage, bravery, or distinguished service.
               </p>
+              <Button 
+                onClick={() => {
+                  setModalStatus('gallantry');
+                  setShowMemorialModal(true);
+                }}
+                className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground shadow-glow transition-smooth"
+              >
+                <Plus className="w-4 h-4" />
+                Add a Gallantry Memorial
+              </Button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {filteredMemorials
@@ -184,6 +220,32 @@ const Gallery = () => {
             </div>
           </TabsContent>
         </Tabs>
+        
+        {/* Memorial Modal */}
+        <Dialog open={showMemorialModal} onOpenChange={setShowMemorialModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-serif">
+                {modalStatus === 'fallen' && 'Add a Fallen Hero Memorial'}
+                {modalStatus === 'serving' && 'Add a Serving Soldier Memorial'}
+                {modalStatus === 'gallantry' && 'Add a Gallantry Memorial'}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <MemorialForm 
+              status={modalStatus || undefined}
+              onSuccess={() => {
+                setShowMemorialModal(false);
+                setModalStatus(null);
+                // Optionally refresh memorials after successful submission
+              }}
+              onCancel={() => {
+                setShowMemorialModal(false);
+                setModalStatus(null);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

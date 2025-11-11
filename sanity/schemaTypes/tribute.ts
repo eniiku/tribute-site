@@ -2,7 +2,7 @@ import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'tribute',
-  title: 'Tribute',
+  title: 'Wall of Honour - Tribute',
   type: 'document',
   fields: [
     defineField({

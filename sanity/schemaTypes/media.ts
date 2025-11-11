@@ -2,7 +2,7 @@ import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'media',
-  title: 'Media',
+  title: 'Gallery - Media Asset',
   type: 'document',
   fields: [
     defineField({

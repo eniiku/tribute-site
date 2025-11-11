@@ -2,7 +2,7 @@ import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'guestbook',
-  title: 'Guestbook Entry',
+  title: 'Guestbook - Message',
   type: 'document',
   fields: [
     defineField({

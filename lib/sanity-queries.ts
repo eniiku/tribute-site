@@ -2,7 +2,7 @@ import { client } from '@/sanity/lib/client'
 import { groq } from 'next-sanity'
 
 export async function getFeaturedMemorials() {
-  const memorialQuery = groq`*[_type == 'memorial' && featured == true] {
+  const memorialQuery = groq`*[_type == 'memorial' && featured == true && approved == true] {
     _id,
     name,
     role,
@@ -48,7 +48,7 @@ export async function getFeaturedMemorials() {
 }
 
 export async function getAllMemorials() {
-  const memorialQuery = groq`*[_type == 'memorial'] {
+  const memorialQuery = groq`*[_type == 'memorial' && approved == true] {
     _id,
     name,
     role,
@@ -97,7 +97,7 @@ export async function getAllMemorials() {
 export async function getMemorialById(id: string) {
   try {
     // First get the memorial document
-    const memorialQuery = groq`*[_type == 'memorial' && _id == $id] {
+    const memorialQuery = groq`*[_type == 'memorial' && _id == $id && approved == true] {
       _id,
       name,
       role,

@@ -2,7 +2,7 @@ import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'timelineEvent',
-  title: 'Timeline Event',
+  title: 'Timeline - Historical Event',
   type: 'document',
   fields: [
     defineField({
