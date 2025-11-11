@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
       message,
       relationship,
       approved: true,  // Auto-approve tributes
-      entryType: 'tribute',
       memorial: memorialId ? {
         _type: 'reference',
         _ref: memorialId,

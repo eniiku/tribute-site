@@ -20,13 +20,13 @@ const Home = () => {
       try {
         const data = await getFeaturedMemorials()
 
-        console.log(data)
+
         // Convert image objects to URLs and set tribute counts
         const memorialsWithImages = data.map((memorial: any) => ({
           ...memorial,
           id: memorial._id, // Map _id to id for compatibility
           imageUrl: memorial.image ? urlFor(memorial.image).url() : '/placeholder.svg',
-          tributeCount: memorial.tributes ? memorial.tributes.length : 0
+          tributeCount: memorial.tributeCount || 0
         }))
         setFeaturedMemorials(memorialsWithImages)
       } catch (error) {
@@ -59,7 +59,7 @@ const Home = () => {
   return (
     <div className='min-h-screen pt-16'>
       {/* Hero Section */}
-      <section className='relative py-24 px-4 bg-linear-to-b from-secondary/30 to-background'>
+      <section className='relative py-24 px-4 bg-gradient-to-b from-secondary/30 to-background'>
         <div className='container mx-auto max-w-4xl text-center animate-fade-in-slow'>
           <div className='mb-6 inline-flex items-center gap-2 text-accent'>
             <Heart className='w-5 h-5' />

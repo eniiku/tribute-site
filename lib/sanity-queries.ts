@@ -2,7 +2,7 @@ import { client } from '@/sanity/lib/client'
 import { groq } from 'next-sanity'
 
 export async function getFeaturedMemorials() {
-  const query = groq`*[_type == 'memorial' && featured == true] {
+  const memorialQuery = groq`*[_type == 'memorial' && featured == true] {
     _id,
     name,
     role,
@@ -12,13 +12,34 @@ export async function getFeaturedMemorials() {
       "Unknown years"
     ),
     image,
-    tributes,
     _updatedAt
   }[0...6]`
   
+  const tributesQuery = groq`*[_type == 'tribute' && approved == true && defined(memorial._ref)] {
+    "memorialId": memorial._ref
+  }`
+  
   try {
-    const memorials = await client.fetch(query)
-    return memorials
+    const [memorials, allTributes] = await Promise.all([
+      client.fetch(memorialQuery),
+      client.fetch(tributesQuery)
+    ]);
+    
+    // Count tributes per memorial
+    const tributeCounts: Record<string, number> = {};
+    allTributes.forEach((tribute: any) => {
+      if (tribute.memorialId) {
+        tributeCounts[tribute.memorialId] = (tributeCounts[tribute.memorialId] || 0) + 1;
+      }
+    });
+    
+    // Add tribute counts to memorials
+    const memorialsWithCounts = memorials.map((memorial: any) => ({
+      ...memorial,
+      tributeCount: tributeCounts[memorial._id] || 0
+    }));
+    
+    return memorialsWithCounts;
   } catch (error) {
     console.error('Error fetching featured memorials:', error)
     return []
@@ -26,7 +47,7 @@ export async function getFeaturedMemorials() {
 }
 
 export async function getAllMemorials() {
-  const query = groq`*[_type == 'memorial'] {
+  const memorialQuery = groq`*[_type == 'memorial'] {
     _id,
     name,
     role,
@@ -36,16 +57,35 @@ export async function getAllMemorials() {
       "Unknown years"
     ),
     image,
-    tributes,
     deathDate,
     _updatedAt
   }`
   
+  const tributesQuery = groq`*[_type == 'tribute' && approved == true && defined(memorial._ref)] {
+    "memorialId": memorial._ref
+  }`
+  
   try {
-    const memorials = await client.fetch(query)
-
-    console.log(memorials)
-    return memorials
+    const [memorials, allTributes] = await Promise.all([
+      client.fetch(memorialQuery),
+      client.fetch(tributesQuery)
+    ]);
+    
+    // Count tributes per memorial
+    const tributeCounts: Record<string, number> = {};
+    allTributes.forEach((tribute: any) => {
+      if (tribute.memorialId) {
+        tributeCounts[tribute.memorialId] = (tributeCounts[tribute.memorialId] || 0) + 1;
+      }
+    });
+    
+    // Add tribute counts to memorials
+    const memorialsWithCounts = memorials.map((memorial: any) => ({
+      ...memorial,
+      tributeCount: tributeCounts[memorial._id] || 0
+    }));
+    
+    return memorialsWithCounts;
   } catch (error) {
     console.error('Error fetching all memorials:', error)
     return []
@@ -54,8 +94,8 @@ export async function getAllMemorials() {
 
 export async function getMemorialById(id: string) {
   try {
-    // First get the memorial with its tributes references
-    const query = groq`*[_type == 'memorial' && _id == $id] {
+    // First get the memorial document
+    const memorialQuery = groq`*[_type == 'memorial' && _id == $id] {
       _id,
       name,
       role,
@@ -64,39 +104,31 @@ export async function getMemorialById(id: string) {
       deathDate,
       biography,
       image,
-      tributes,
       _updatedAt
     }[0]`
     
-    const memorial = await client.fetch(query, { id });
+    const memorial = await client.fetch(memorialQuery, { id });
     
     if (!memorial) {
       return null;
     }
     
-    // Get the tribute IDs from the references
-    const tributeIds = memorial.tributes?.map(t => t._ref) || [];
+    // Query for tributes that reference this memorial
+    const tributesQuery = groq`*[_type == 'tribute' && approved == true && defined(memorial) && memorial._ref == $id] {
+      _id,
+      author,
+      relationship,
+      message,
+      submittedAt,
+      image
+    }`;
     
-    // If there are tribute references, fetch the actual tribute documents
-    let actualTributes = [];
-    if (tributeIds.length > 0) {
-      const tributesQuery = groq`*[(_id in $ids) && _type == 'tribute' && approved == true] {
-        _id,
-        author,
-        relationship,
-        message,
-        submittedAt,
-        approved,
-        image
-      }`;
-      
-      actualTributes = await client.fetch(tributesQuery, { ids: tributeIds });
-    }
+    const tributes = await client.fetch(tributesQuery, { id });
     
-    // Return the memorial with the expanded tribute data
+    // Return the memorial with the retrieved tribute data
     return {
       ...memorial,
-      tributes: actualTributes
+      tributes
     };
   } catch (error) {
     console.error(`Error fetching memorial with ID ${id}:`, error)

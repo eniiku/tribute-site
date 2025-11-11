@@ -31,7 +31,7 @@ const Gallery = () => {
           ...memorial,
           id: memorial._id, // Map _id to id for compatibility
           imageUrl: memorial.image ? urlFor(memorial.image).url() : '/placeholder.svg',
-          tributeCount: memorial.tributes ? memorial.tributes.length : 0
+          tributeCount: memorial.tributeCount || 0
         }))
         setMemorials(memorialsWithImages)
         setFilteredMemorials(memorialsWithImages)

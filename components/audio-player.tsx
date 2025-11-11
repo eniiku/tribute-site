@@ -97,23 +97,34 @@ const AudioPlayer = ({ defaultAudioUrl = "/audio/memorial-music.mp3" }: AudioPla
 
     fetchAudio();
 
-    // Remember mute state in localStorage
+    // Remember mute/volume state in localStorage
     const savedMute = localStorage.getItem("audioMuted");
     if (savedMute !== null) {
       setIsMuted(savedMute === "true");
+    }
+    
+    const savedVolume = localStorage.getItem("audioVolume");
+    if (savedVolume !== null) {
+      setVolume([parseInt(savedVolume, 10)]);
     }
   }, []);
 
   // Update audio element when audioUrl changes
   useEffect(() => {
     if (audioRef.current) {
+      // Apply current volume and mute state immediately
+      audioRef.current.volume = volume[0] / 100;
+      audioRef.current.muted = isMuted;
+      
+      // Load the new source and preserve the state
       audioRef.current.load();
+      
       if (isPlaying && !isMuted) {
         // Play if it was playing before and we have a new audio source
         audioRef.current.play().catch(e => console.error('Error playing audio after source change:', e));
       }
     }
-  }, [audioUrl]);
+  }, [audioUrl, volume, isMuted]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -147,6 +158,7 @@ const AudioPlayer = ({ defaultAudioUrl = "/audio/memorial-music.mp3" }: AudioPla
     setVolume(value);
     if (audioRef.current) {
       audioRef.current.volume = value[0] / 100;
+      localStorage.setItem("audioVolume", value[0].toString());
       if (value[0] > 0 && isMuted) {
         setIsMuted(false);
         audioRef.current.muted = false;

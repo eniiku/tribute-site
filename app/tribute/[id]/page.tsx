@@ -50,17 +50,13 @@ const Tribute = () => {
           return;
         }
        
-        console.log("DAta-asdfasdfa", data)
-        
         const processedMemorial = {
           ...data,
           id: data._id, // Map _id to id for compatibility
           imageUrl: data.image ? urlFor(data.image).url() : "/placeholder.svg",
-          // Filter only approved tributes
-          tributes: data.tributes ? data.tributes.filter((t: any) => t.approved) : []
+          // Use the tributes as they are already filtered by the query
+          tributes: data.tributes || []
         };
-
-        console.log("Processed Memorial", processedMemorial)
         
         setMemorial(processedMemorial);
       } catch (err) {
