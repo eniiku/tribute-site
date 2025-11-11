@@ -4,7 +4,7 @@ import Navigation from '@/components/navigation'
 import AudioPlayer from '@/components/audio-player'
 import { Toaster } from '@/components/ui/sonner'
 
-import './globals.css'
+import '../globals.css'
 
 const inter = Inter({
   variable: '--font-inter',

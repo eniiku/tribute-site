@@ -8,12 +8,6 @@ import Link, { LinkProps } from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const Navigation = () => {
-  const pathname = usePathname()
-
-  console.log(pathname)
-
-  if (pathname.includes('/studio')) return null
-
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/gallery', label: 'Gallery', icon: Image },
