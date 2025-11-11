@@ -1,0 +1,119 @@
+Thank a SOLDIER
+Theme: Honouring Our Heroes | Preserving Their Legacy
+Navigation: Home | Wall of Honour | Timeline | Memorial Gallery | Guestbook
+
+1. HOME / LANDING PAGE
+Hero Banner:
+* Title: Thank a Soldier Portal
+* Blurb: A national space to honour all Nigerian soldiers - those who gave their lives and those who continue to serve and protect our nation.
+* Tagline: Their courage sustains us. Our gratitude remembers and celebrates them.
+Intro Paragraph:
+Every year, Nigerians at home and abroad unite to honour the men and women of the Nigerian Armed Forces - remembering the fallen, celebrating those still in service, and recognising acts of gallantry. This portal is a national space of reflection, appreciation, and support.
+Countdown Clock:
+###January 15, 2026 - Armed Forces Remembrance Day ####
+Call-to-Action / Navigation Prompt:
+* Explore the Wall of Honour
+* Trace history in the Timeline
+* View moments of service in the Gallery
+* Honour acts of bravery in Gallantry & Honour
+* Share your message in the Guestbook
+
+2. WALL OF HONOUR PAGE
+Banner / Hero:
+* Title: Wall of Honour
+* Blurb: A national space to recognise all Nigerian soldiers - those who gave their lives, those who continue to serve, and those who demonstrated exceptional bravery.
+* Tagline: Every hero has a story. Every story inspires us all.
+Section Content:
+The Wall of Honour is a dignified space where citizens can post tributes, share stories, and upload photos to recognise fallen heroes and serving soldiers alike.
+Sections for Display:
+ Fallen Soldiers - Tributes to those who made the ultimate sacrifice.
+* Tribute cards showing: Name, Rank, Unit, Short Biography, Optional Photo
+* CTA: Post Tribute for a Fallen Hero
+Serving Soldiers - Messages of encouragement, thanks, and recognition for soldiers actively defending the nation.
+* Tribute cards showing: Name, Rank, Unit, Service Highlight, Optional Photo
+* CTA: Post Tribute for a Serving Soldier
+Gallantry & Honour
+* Featured soldiers recognised for acts of courage, bravery, or distinguished service
+* Each card shows: Name, Rank, Unit, Award / Medal, Short Story of Act
+* CTA: Nominate a Soldier / Thank a Hero
+Navigation / Tabs / Filters:
+* Tabs: Fallen | Serving | Gallantry
+* Search by Name, Unit, Status (fallen/Serving) --> include Status
+Optional Interactive Features:
+* Hover-over cards with quick summary
+* Click to expand full story, view tributes, or add your message
+Call-to-Action:
+* Post a tribute
+* Search by name, unit, or 
+* Read other tributes
+
+3. TIMELINE PAGE
+Banner:
+* Title: Timeline of the Nigerian Armed Forces
+* Blurb: From colonial beginnings to modern operations, a story of courage, unity, and service - remembering past sacrifices and ongoing commitment.
+* Tagline: A journey through history, written in courage.
+Intro for Timeline Display:
+Explore the defining moments of the Nigerian Armed Forces - a story of heroism, service, and dedication that continues to shape Nigeria's destiny.
+Chronological Timeline:
+1900-1945: Early Formations & Global War Service
+* 1900: Establishment of the West African Frontier Force (WAFF).
+* 1914-1918: Nigerian soldiers participate in WWI campaigns.
+* 1939-1945: Nigerian troops serve in WWII in North Africa, Burma, and Europe.
+1956-1960: Transition to Independence
+* Mid-1950s: Expansion of the Nigerian Regiment; local command increases.
+* 1960: Nigeria gains independence; Armed Forces symbolize national unity.
+1967-1970: Nigerian Civil War (Biafra Conflict)
+* July 1967: Start of hostilities; Operation UNICORD launched.
+* Armed Forces play a critical role in preserving national unity.
+1970-1979: Post-War Reconstruction & Peacekeeping Beginnings
+* Rebuilding and professionalisation of Army, Navy, and Air Force.
+* Nigeria contributes to UN Operation in the Congo (ONUC).
+* New units and command structures established for international deployments.
+1980-1989: Expansion and Regional Peacekeeping
+* Development of specialised peacekeeping units and training centres.
+1990-1999: Professionalisation and African Leadership
+* Leading role in African peacekeeping; deployments to Liberia and Sierra Leone.
+* Formation of specialised contingents for multinational operations.
+2000-2010: Modern Operations and Regional Security
+* Internal security challenges: insurgency, maritime security, and humanitarian operations.
+* 2003-2018: Contributions to UNMIL (Liberia) peacekeeping.
+* 2004: Deployment of the first Formed Police Unit (FPU) to Liberia.
+2011-Present: Modernisation and Multinational Operations
+* Counter-insurgency operations and regional coalition efforts strengthened.
+* Formation and deployment of Multinational Joint Task Force (MNJTF) against Boko Haram.
+* 2013: Deployment to AFISMA (Mali) regional security mission.
+* Nigeria continues contributions to over 40 UN/AU/ECOWAS missions globally.
+
+4. GALLERY PAGE
+Banner:
+* Title: Gallery
+* Blurb: A visual tribute to all soldiers - those who have fallen and those who continue to serve.
+* Tagline: Faces of service. Moments of sacrifice.
+Section Content:
+Photographs of soldiers in action, peacekeeping missions, ceremonies, and memorials. Each image captures courage, pride, and dedication.
+Call-to-Action:
+* View historic moments
+* Explore ceremonial honours
+* See heroes in action
+* Discover national monuments
+
+5. GUESTBOOK PAGE
+Banner:
+* Title: National Guestbook
+* Blurb: A shared space for Nigerians to express gratitude, remembrance, and pride for all soldiers.
+* Tagline: Your words of honour become part of our collective memory.
+Section Content:
+The Guestbook allows citizens to post messages of appreciation, remembrance, and respect. Every entry contributes to a lasting record of national gratitude for both fallen and serving soldiers, including acts of gallantry.
+Call-to-Action:
+* Write a message of tribute
+* Mention a soldier, unit, or event
+* Share prayers, memories, or reflections
+
+6. FOOTER / SITE-WIDE NOTE
+Footer Text:
+This portal honours all members of the Nigerian Armed Forces - those who have served, those who have fallen, and those continuing to defend the nation with pride, including acts of courage and distinguished service.
+Quote / Tagline:
+They gave their today for our tomorrow. Let us remember, thank, and honour them - today, tomorrow, and always.
+Navigation Links (Footer):
+Home | Wall of Honour | Timeline | Memorial Gallery | Guestbook
+
