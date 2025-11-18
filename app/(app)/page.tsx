@@ -109,7 +109,7 @@ const Home = () => {
 
         <div className='container relative z-10 mx-auto px-6 text-center animate-fade-in'>
           <div className='max-w-3xl mx-auto space-y-4'>
-            <div className='text-white/80 text-[12px] font-medium tracking-[0.35em] uppercase'>
+            <div className='text-primary text-[12px] font-medium tracking-[0.35em] uppercase dark:text-white/80'>
               Nigerian Armed Forces
             </div>
 
@@ -137,7 +137,7 @@ const Home = () => {
         </div>
 
         {/* Bottom fade */}
-        <div className='absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-background to-transparent' />
+        <div className='absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t dark:from-background to-transparent' />
       </section>
 
       {/* Countdown Section */}

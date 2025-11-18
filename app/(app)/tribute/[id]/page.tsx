@@ -158,7 +158,7 @@ const Tribute = () => {
               <img
                 src={memorial.imageUrl}
                 alt={memorial.name}
-                className="w-full aspect-square object-cover rounded-lg shadow-gentle"
+                className="w-full aspect-square object-cover object-top rounded-lg shadow-gentle"
               />
             </div>
             

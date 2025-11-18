@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 
 import '../globals.css'
 import Footer from '@/components/footer'
+import { ThemeProvider } from 'next-themes'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -19,7 +20,8 @@ const crimson_pro = Crimson_Pro({
 
 export const metadata: Metadata = {
   title: 'Thank A Soldier - Honouring Our Heroes',
-  description: 'A national space to honour all Nigerian soldiers - those who gave their lives and those who continue to serve and protect our nation.',
+  description:
+    'A national space to honour all Nigerian soldiers - those who gave their lives and those who continue to serve and protect our nation.',
 }
 
 export default function RootLayout({
@@ -28,16 +30,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en'>
-      <body
-        className={`${inter.variable} ${crimson_pro.variable} antialiased`}
-      >
-        <Navigation />
-        <AudioPlayer />
-        {children}
-        <Footer />
-        
-        <Toaster />
+    <html lang='en' suppressHydrationWarning>
+      <body className={`${inter.variable} ${crimson_pro.variable} antialiased`}>
+        <ThemeProvider attribute='class' defaultTheme='light' enableSystem>
+          <Navigation />
+          <AudioPlayer />
+
+          {children}
+          <Footer />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   )

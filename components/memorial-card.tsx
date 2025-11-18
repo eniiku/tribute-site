@@ -28,12 +28,12 @@ const MemorialCard = ({ memorial }: MemorialCardProps) => {
       <Card className='overflow-hidden gradient-card border border-border/40 hover:border-primary/40 transition-smooth hover:shadow-hover h-full'>
         <div className='aspect-3/4 overflow-hidden bg-muted/20 relative'>
           {/* Subtle overlay */}
-          <div className='absolute inset-0 bg-linear-to-t from-card/90 via-card/20 to-card/0 z-10 opacity-70 group-hover:opacity-50 transition-smooth' />
+          <div className='absolute inset-0 bg-linear-to-t from-card/60 dark:from-card/90 via-card/20 to-card/0 z-10 opacity-70 group-hover:opacity-50 transition-smooth' />
 
           <img
             src={memorial.imageUrl}
             alt={memorial.name}
-            className='w-full h-full object-cover group-hover:scale-105 transition-smooth duration-700'
+            className='w-full h-full object-cover object-top group-hover:scale-105 transition-smooth duration-700'
           />
         </div>
 
