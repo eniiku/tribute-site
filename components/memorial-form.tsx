@@ -70,7 +70,7 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
       name: '',
       role: '',
       unit: '',
-      status: status || '', // Pre-select the status if provided
+      status: status || '', 
       birthDate: '',
       deathDate: '',
       biography: '',
@@ -78,7 +78,9 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
     },
   })
 
-  // Pre-populate status if passed as prop
+  
+  const currentStatus = form.watch('status');
+
   useEffect(() => {
     if (status) {
       form.setValue('status', status);
@@ -95,7 +97,12 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
       formData.append('unit', data.unit);
       formData.append('status', data.status);
       if (data.birthDate) formData.append('birthDate', data.birthDate);
-      if (data.deathDate) formData.append('deathDate', data.deathDate);
+      
+      
+      if (data.status === 'fallen' && data.deathDate) {
+        formData.append('deathDate', data.deathDate);
+      }
+
       formData.append('biography', data.biography);
       
       if (selectedImage) {
@@ -111,8 +118,7 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
 
       if (response.ok && result.success) {
         toast.success('Memorial submitted', {
-          description:
-            'Your memorial has been submitted and will be reviewed before being published. Thank you for preserving our heroes\' legacy.',
+          description: "Your memorial has been submitted and will be reviewed. Thank you."
         })
         form.reset()
         setSelectedImage(null)
@@ -122,10 +128,7 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
       }
     } catch (error) {
       console.error('Error submitting memorial:', error)
-      toast.error('Submission failed', {
-        description:
-          'There was an error submitting the memorial. Please try again.',
-      })
+      toast.error('Submission failed')
     } finally {
       setIsSubmitting(false)
     }
@@ -205,7 +208,7 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div className={`grid gap-4 ${currentStatus === 'fallen' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
           <FormField
             control={form.control}
             name='birthDate'
@@ -220,19 +223,21 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name='deathDate'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Death Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {currentStatus === 'fallen' && (
+            <FormField
+              control={form.control}
+              name='deathDate'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Death Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         <FormField

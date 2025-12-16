@@ -43,6 +43,7 @@ export default defineType({
       name: 'deathDate',
       title: 'Death Date',
       type: 'date',
+      hidden: ({ document }) => document?.status !== 'fallen',
     }),
     defineField({
       name: 'biography',
