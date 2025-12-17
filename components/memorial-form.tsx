@@ -134,9 +134,24 @@ const MemorialForm = ({ status, onSuccess, onCancel }: MemorialFormProps) => {
     }
   }
 
+const getDynamicTitle = () => {
+  const currentStatus = form.watch('status');
+  switch (currentStatus) {
+    case 'fallen': return 'Fallen Hero';
+    case 'serving': return 'Serving Soldier';
+    case 'gallantry': return 'Gallantry';
+    default: return 'Hero';
+  }
+};
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+        <div className="pb-4 border-b">
+          <h2 className="text-xl font-bold font-serif text-foreground">
+            Add a {getDynamicTitle()} Memorial
+          </h2>
+        </div>
         <div className='text-center mb-4'> 
           <p className='text-sm text-muted-foreground'>
             Your submission will be reviewed before being published to ensure accuracy and respect.

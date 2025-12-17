@@ -224,7 +224,7 @@ const Gallery = () => {
         {/* Memorial Modal */}
         <Dialog open={showMemorialModal} onOpenChange={setShowMemorialModal}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+            <DialogHeader className="sr-only">
               <DialogTitle className="text-2xl font-serif">
                 {modalStatus === 'fallen' && 'Add a Fallen Hero Memorial'}
                 {modalStatus === 'serving' && 'Add a Serving Soldier Memorial'}
@@ -234,6 +234,7 @@ const Gallery = () => {
             
             <MemorialForm 
               status={modalStatus || undefined}
+              
               onSuccess={() => {
                 setShowMemorialModal(false);
                 setModalStatus(null);
